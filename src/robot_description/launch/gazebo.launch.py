@@ -8,7 +8,7 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     package_name = 'robot_description'
-    urdf_file = 'beam_agrobot_v2.urdf'
+    urdf_file = 'agrobot_v2.urdf.xacro'
     pkg_share = get_package_share_directory(package_name)
     urdf_path = os.path.join(pkg_share, 'urdf', urdf_file)
 
@@ -39,7 +39,13 @@ def generate_launch_description():
     spawn_entity = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
-        arguments=['-entity', 'Beam-AgroBot', '-file', urdf_path],
+        arguments=[
+            '-entity', 'Beam-AgroBot',
+            '-file', urdf_path,
+            '-x', '0.0',
+            '-y', '0.0',
+            '-z', '0.5'   # This is the magic number to stop the flip
+        ],
         output='screen'
     )
 
