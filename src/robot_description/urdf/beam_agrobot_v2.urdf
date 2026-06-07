@@ -1,0 +1,810 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<robot
+  name="beam_agrobot_v2">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.041773 1.1066E-07 0.0086049"
+        rpy="0 0 0" />
+      <mass
+        value="234.66" />
+      <inertia
+        ixx="9.5676"
+        ixy="-1.0199E-05"
+        ixz="-0.80343"
+        iyy="23.224"
+        iyz="-2.3006E-06"
+        izz="27.142" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="lidar_link">
+    <inertial>
+      <origin
+        xyz="-0.0028178 -0.00029956 0.023158"
+        rpy="0 0 0" />
+      <mass
+        value="0.28578" />
+      <inertia
+        ixx="0.00019613"
+        ixy="1.0228E-06"
+        ixz="5.4025E-06"
+        iyy="0.00018721"
+        iyz="6.1195E-07"
+        izz="0.00027358" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/lidar_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 0.4" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/lidar_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="lidar_joint"
+    type="fixed">
+    <origin
+      xyz="0.4435 0 0.19682"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="lidar_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="right_wheel_link">
+    <inertial>
+      <origin
+        xyz="0.00022467 -0.00049986 0.0036269"
+        rpy="0 0 0" />
+      <mass
+        value="5.5356" />
+      <inertia
+        ixx="0.057208"
+        ixy="-3.1261E-06"
+        ixz="5.3496E-10"
+        iyy="0.057214"
+        iyz="2.2256E-09"
+        izz="0.10823" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/right_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/right_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="right_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.4505 -0.332 -0.1041"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="right_wheel_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="left_wheel_link">
+    <inertial>
+      <origin
+        xyz="0.00027874 -0.00047189 0.0016269"
+        rpy="0 0 0" />
+      <mass
+        value="5.5356" />
+      <inertia
+        ixx="0.057209"
+        ixy="-3.6667E-06"
+        ixz="-1.0563E-08"
+        iyy="0.057213"
+        iyz="5.5206E-09"
+        izz="0.10823" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/left_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/left_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="left_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="-0.45056 0.332 -0.10407"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="left_wheel_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="castor_l_swivel_link">
+    <inertial>
+      <origin
+        xyz="0.0076563 -5.1505E-05 -0.032982"
+        rpy="0 0 0" />
+      <mass
+        value="1.3179" />
+      <inertia
+        ixx="0.0006576"
+        ixy="8.0971E-11"
+        ixz="0.00010963"
+        iyy="0.00079106"
+        iyz="-5.8606E-11"
+        izz="0.0008082" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_l_swivel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_l_swivel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="castor_l_swivel_joint"
+    type="continuous">
+    <origin
+      xyz="0.398 0.2 -0.10453"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="castor_l_swivel_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.001"
+      friction="0.001" />
+  </joint>
+  <link
+    name="castor_l_wheel_link">
+    <inertial>
+      <origin
+        xyz="-3.6082E-16 0 0.0305"
+        rpy="0 0 0" />
+      <mass
+        value="5.3698" />
+      <inertia
+        ixx="0.0086725"
+        ixy="-2.062E-19"
+        ixz="8.5365E-19"
+        iyy="0.0086725"
+        iyz="1.1689E-19"
+        izz="0.015544" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_l_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_l_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="castor_l_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.034301 -0.0305 -0.1004"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="castor_l_swivel_link" />
+    <child
+      link="castor_l_wheel_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.001"
+      friction="0.001" />
+  </joint>
+  <link
+    name="castor_r_swivel_link">
+    <inertial>
+      <origin
+        xyz="0.0076563 -5.1505E-05 -0.032982"
+        rpy="0 0 0" />
+      <mass
+        value="1.3179" />
+      <inertia
+        ixx="0.0006576"
+        ixy="8.096E-11"
+        ixz="0.00010963"
+        iyy="0.00079106"
+        iyz="-5.8613E-11"
+        izz="0.0008082" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_r_swivel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_r_swivel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="castor_r_swivel_joint"
+    type="continuous">
+    <origin
+      xyz="0.398 -0.2 -0.10453"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="castor_r_swivel_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.001"
+      friction="0.001" />
+  </joint>
+  <link
+    name="castor_r_wheel_link">
+    <inertial>
+      <origin
+        xyz="-3.747E-16 -5.5511E-17 0.0305"
+        rpy="0 0 0" />
+      <mass
+        value="5.3698" />
+      <inertia
+        ixx="0.0086725"
+        ixy="1.4155E-19"
+        ixz="9.1092E-19"
+        iyy="0.0086725"
+        iyz="9.8723E-20"
+        izz="0.015544" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_r_wheel_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/castor_r_wheel_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="castor_r_wheel_joint"
+    type="continuous">
+    <origin
+      xyz="0.034301 -0.0305 -0.1004"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="castor_r_swivel_link" />
+    <child
+      link="castor_r_wheel_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      effort="10"
+      velocity="10" />
+    <dynamics
+      damping="0.001"
+      friction="0.001" />
+  </joint>
+  <link
+    name="arm_base_link">
+    <inertial>
+      <origin
+        xyz="-0.0014254 0.0012318 0.038724"
+        rpy="0 0 0" />
+      <mass
+        value="5.7738" />
+      <inertia
+        ixx="0.036402"
+        ixy="-0.00079994"
+        ixz="4.1166E-05"
+        iyy="0.036438"
+        iyz="-3.4695E-05"
+        izz="0.066455" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/arm_base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.2 0.2 0.2 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/arm_base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="arm_mount_joint"
+    type="fixed">
+    <origin
+      xyz="0.10524 0 0.19682"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="arm_base_link" />
+    <axis
+      xyz="0 0 0" />
+  </joint>
+  <link
+    name="base_yaw_link">
+    <inertial>
+      <origin
+        xyz="-0.059184 0.0016136 0.084797"
+        rpy="0 0 0" />
+      <mass
+        value="2.388" />
+      <inertia
+        ixx="0.012377"
+        ixy="0.0005197"
+        ixz="0.0094393"
+        iyy="0.024644"
+        iyz="-0.00032073"
+        izz="0.016814" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/base_yaw_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.98824 0.73725 0.51765 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/base_yaw_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="base_yaw_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0.085"
+      rpy="0 0 0" />
+    <parent
+      link="arm_base_link" />
+    <child
+      link="base_yaw_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="30"
+      velocity="1.5" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="shoulder_link">
+    <inertial>
+      <origin
+        xyz="0.10938 -0.10526 0.026202"
+        rpy="0 0 0" />
+      <mass
+        value="1.0438" />
+      <inertia
+        ixx="0.010591"
+        ixy="0.008946"
+        ixz="0.00081718"
+        iyy="0.0088945"
+        iyz="-0.00082862"
+        izz="0.019033" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/shoulder_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.98824 0.73725 0.51765 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/shoulder_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="shoulder_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="-0.14936 0.013835 0.16"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_yaw_link" />
+    <child
+      link="shoulder_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="40"
+      velocity="1" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="elbow_link">
+    <inertial>
+      <origin
+        xyz="0.11923 0.0095672 -0.058054"
+        rpy="0 0 0" />
+      <mass
+        value="2.011" />
+      <inertia
+        ixx="0.0029441"
+        ixy="0.0015223"
+        ixz="0.00083258"
+        iyy="0.0098705"
+        iyz="-4.6292E-05"
+        izz="0.010343" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/elbow_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.98824 0.73725 0.51765 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/elbow_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="elbow_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0.23355 -0.26144 -0.0015474"
+      rpy="0 0 0" />
+    <parent
+      link="shoulder_link" />
+    <child
+      link="elbow_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="25"
+      velocity="1.5" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="wrist_pitch_link">
+    <inertial>
+      <origin
+        xyz="0.050187 0.033365 -0.0046487"
+        rpy="0 0 0" />
+      <mass
+        value="0.35016" />
+      <inertia
+        ixx="0.0002907"
+        ixy="-7.07E-05"
+        ixz="1.0006E-05"
+        iyy="0.00035003"
+        iyz="6.5488E-06"
+        izz="0.0003978" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/wrist_pitch_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.98824 0.73725 0.51765 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/wrist_pitch_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_pitch_joint"
+    type="revolute">
+    <origin
+      xyz="0.35465 -0.048027 -0.081056"
+      rpy="0 0 0" />
+    <parent
+      link="elbow_link" />
+    <child
+      link="wrist_pitch_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-1.57"
+      upper="1.57"
+      effort="10"
+      velocity="2" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+  <link
+    name="wrist_roll_link">
+    <inertial>
+      <origin
+        xyz="0.022162 0.011473 -0.0019139"
+        rpy="0 0 0" />
+      <mass
+        value="0.16506" />
+      <inertia
+        ixx="8.3037E-05"
+        ixy="1.1941E-06"
+        ixz="-3.3771E-06"
+        iyy="8.206E-05"
+        iyz="-2.2439E-06"
+        izz="3.7143E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/wrist_roll_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.98824 0.73725 0.51765 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://beam_agrobot_v2/meshes/wrist_roll_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wrist_roll_joint"
+    type="revolute">
+    <origin
+      xyz="0.081369 0.054095 -0.0075371"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_pitch_link" />
+    <child
+      link="wrist_roll_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-3.14"
+      upper="3.14"
+      effort="10"
+      velocity="2" />
+    <dynamics
+      damping="0.1"
+      friction="0.1" />
+  </joint>
+</robot>

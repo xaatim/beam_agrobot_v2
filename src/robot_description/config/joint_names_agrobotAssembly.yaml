@@ -1,0 +1,1 @@
+controller_joint_names: ['', 'right_wheel_joint', 'left_wheel_joint', 'castor_l_swivel_joint', 'castor_l_wheel_joint', 'castor_r_swivel_joint', 'base_yaw_joint', 'shoulder_pitch_joint', 'elbow_pitch_joint', 'wrist_pitch_joint', 'wrist_roll_joint', ]
