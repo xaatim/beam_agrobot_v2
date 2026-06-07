@@ -1,0 +1,59 @@
+material SlateBlue
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.341 0.459 0.565 1.0
+      diffuse 0.341 0.459 0.565 1.0
+    }
+  }
+}
+
+material IndustrialOrange
+{
+  technique
+  {
+    pass
+    {
+      ambient 1.0 0.423 0.039 1.0
+      diffuse 1.0 0.423 0.039 1.0
+    }
+  }
+}
+
+material DarkTeal
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.147 0.226 0.276 1.0
+      diffuse 0.147 0.226 0.276 1.0
+    }
+  }
+}
+
+material DeepOceanBlue
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.200 0.396 0.541 1.0
+      diffuse 0.200 0.396 0.541 1.0
+    }
+  }
+}
+
+material SandyYellow
+{
+  technique
+  {
+    pass
+    {
+      ambient 0.976 0.780 0.310 1.0
+      diffuse 0.976 0.780 0.310 1.0
+    }
+  }
+}

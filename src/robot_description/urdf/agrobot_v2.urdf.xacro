@@ -4,4 +4,5 @@
   <xacro:include filename="agrobot_v2_core.xacro" />
   <xacro:include filename="materials.xacro" />
   <xacro:include filename="depth_camera.gazebo.xacro" />
+  <xacro:include filename="gazebo_materials.xacro" />
 </robot>
