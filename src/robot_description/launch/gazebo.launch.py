@@ -1,4 +1,6 @@
 import os
+
+from launch.substitutions import Command
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
@@ -19,14 +21,14 @@ def generate_launch_description():
         )
     )
 
-    with open(urdf_path, 'r') as infp:
-        robot_desc = infp.read()
 
     robot_state_publisher = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
         output='screen',
-        parameters=[{'robot_description': robot_desc}]
+        parameters=[{
+          'robot_description': Command(['xacro ', urdf_path])
+          }]
     )
 
     static_tf = Node(
@@ -41,10 +43,10 @@ def generate_launch_description():
         executable='spawn_entity.py',
         arguments=[
             '-entity', 'Beam-AgroBot',
-            '-file', urdf_path,
+            '-topic', 'robot_description',
             '-x', '0.0',
             '-y', '0.0',
-            '-z', '0.5'   # This is the magic number to stop the flip
+            '-z', '0.5' 
         ],
         output='screen'
     )

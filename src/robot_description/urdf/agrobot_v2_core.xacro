@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_description">
+  <xacro:include filename="material.xacro" />
+
   <link name="base_link">
     <inertial>
       <origin
@@ -24,11 +26,7 @@
         <mesh
           filename="package://robot_description/meshes/base_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.79216 0.81961 0.93333 1" />
-      </material>
+      <material name="slate_blue" />
     </visual>
     <collision>
       <origin
@@ -64,11 +62,7 @@
         <mesh
           filename="package://robot_description/meshes/lidar_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.75294 0.75294 0.75294 0.4" />
-      </material>
+      <material name="deep_ocean_blue" />
     </visual>
     <collision>
       <origin
@@ -117,11 +111,7 @@
         <mesh
           filename="package://robot_description/meshes/right_wheel_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.75294 0.75294 0.75294 1" />
-      </material>
+      <material name="dark_teal"/>
     </visual>
     <collision>
       <origin
@@ -176,11 +166,7 @@
         <mesh
           filename="package://robot_description/meshes/left_wheel_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.75294 0.75294 0.75294 1" />
-      </material>
+      <material name="dark_teal"/>
     </visual>
     <collision>
       <origin
@@ -235,11 +221,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_l_swivel_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.89804 0.91765 0.92941 1" />
-      </material>
+      <material name="slate_blue"/>
     </visual>
     <collision>
       <origin
@@ -294,11 +276,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_l_wheel_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.89804 0.91765 0.92941 1" />
-      </material>
+      <material name="dark_teal"/>
     </visual>
     <collision>
       <origin
@@ -353,11 +331,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_r_swivel_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.89804 0.91765 0.92941 1" />
-      </material>
+      <material name="slate_blue"/>
     </visual>
     <collision>
       <origin
@@ -412,11 +386,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_r_wheel_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.89804 0.91765 0.92941 1" />
-      </material>
+      <material name="dark_teal"/>
     </visual>
     <collision>
       <origin
@@ -471,11 +441,7 @@
         <mesh
           filename="package://robot_description/meshes/arm_base_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.2 0.2 0.2 1" />
-      </material>
+      <material name="dark_teal"/>
     </visual>
     <collision>
       <origin
@@ -524,11 +490,7 @@
         <mesh
           filename="package://robot_description/meshes/base_yaw_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.98824 0.73725 0.51765 1" />
-      </material>
+      <material name="industrial_orange"/>
     </visual>
     <collision>
       <origin
@@ -585,11 +547,7 @@
         <mesh
           filename="package://robot_description/meshes/shoulder_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.98824 0.73725 0.51765 1" />
-      </material>
+      <material name="industrial_orange"/>
     </visual>
     <collision>
       <origin
@@ -646,11 +604,7 @@
         <mesh
           filename="package://robot_description/meshes/elbow_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.98824 0.73725 0.51765 1" />
-      </material>
+      <material name="industrial_orange"/>
     </visual>
     <collision>
       <origin
@@ -707,11 +661,7 @@
         <mesh
           filename="package://robot_description/meshes/wrist_pitch_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.98824 0.73725 0.51765 1" />
-      </material>
+      <material name="industrial_orange"/>
     </visual>
     <collision>
       <origin
@@ -768,11 +718,7 @@
         <mesh
           filename="package://robot_description/meshes/wrist_roll_link.STL" />
       </geometry>
-      <material
-        name="">
-        <color
-          rgba="0.98824 0.73725 0.51765 1" />
-      </material>
+      <material name="sandy_yellow"/>
     </visual>
     <collision>
       <origin
