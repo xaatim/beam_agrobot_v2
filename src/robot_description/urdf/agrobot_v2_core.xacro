@@ -777,4 +777,12 @@
     <child link="camera_link" />
   </joint>
 
+  <link name="camera_depth_optical_frame"/>
+
+  <joint name="camera_optical_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708" />
+    <parent link="camera_link" />
+    <child link="camera_depth_optical_frame" />
+  </joint>
+  
 </robot>
