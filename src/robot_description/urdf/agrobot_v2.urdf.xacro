@@ -2,5 +2,5 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_name">
 
   <xacro:include filename="agrobot_v2_core.xacro" />
-  
+  <xacro:include filename="material.xacro" />
 </robot>
