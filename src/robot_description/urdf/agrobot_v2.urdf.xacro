@@ -6,4 +6,5 @@
   <xacro:include filename="depth_camera.gazebo.xacro" />
   <xacro:include filename="gazebo_materials.xacro" />
   <xacro:include filename="self-collision.gazebo.xacro" />
+  <xacro:include filename="gazebo_control.xacro" />
 </robot>
