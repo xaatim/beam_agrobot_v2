@@ -2,6 +2,14 @@
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_description">
 
+  <link name="base_footprint" />
+
+  <joint name="base_footprint_joint" type="fixed">
+    <parent link="base_footprint" />
+    <child link="base_link" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
   <link name="base_link">
     <inertial>
       <origin
@@ -110,7 +118,7 @@
         <mesh
           filename="package://robot_description/meshes/right_wheel_link.STL" />
       </geometry>
-      <material name="dark_teal"/>
+      <material name="dark_teal" />
     </visual>
     <collision>
       <origin
@@ -135,8 +143,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      effort="10"
-      velocity="10" />
+      effort="500"
+      velocity="20" />
     <dynamics
       damping="0.1"
       friction="0.1" />
@@ -165,7 +173,7 @@
         <mesh
           filename="package://robot_description/meshes/left_wheel_link.STL" />
       </geometry>
-      <material name="dark_teal"/>
+      <material name="dark_teal" />
     </visual>
     <collision>
       <origin
@@ -190,8 +198,8 @@
     <axis
       xyz="0 0 1" />
     <limit
-      effort="10"
-      velocity="10" />
+      effort="500"
+      velocity="20" />
     <dynamics
       damping="0.1"
       friction="0.1" />
@@ -220,7 +228,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_l_swivel_link.STL" />
       </geometry>
-      <material name="slate_blue"/>
+      <material name="slate_blue" />
     </visual>
     <collision>
       <origin
@@ -275,7 +283,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_l_wheel_link.STL" />
       </geometry>
-      <material name="dark_teal"/>
+      <material name="dark_teal" />
     </visual>
     <collision>
       <origin
@@ -330,7 +338,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_r_swivel_link.STL" />
       </geometry>
-      <material name="slate_blue"/>
+      <material name="slate_blue" />
     </visual>
     <collision>
       <origin
@@ -385,7 +393,7 @@
         <mesh
           filename="package://robot_description/meshes/castor_r_wheel_link.STL" />
       </geometry>
-      <material name="dark_teal"/>
+      <material name="dark_teal" />
     </visual>
     <collision>
       <origin
@@ -440,7 +448,7 @@
         <mesh
           filename="package://robot_description/meshes/arm_base_link.STL" />
       </geometry>
-      <material name="dark_teal"/>
+      <material name="dark_teal" />
     </visual>
     <collision>
       <origin
@@ -489,7 +497,7 @@
         <mesh
           filename="package://robot_description/meshes/base_yaw_link.STL" />
       </geometry>
-      <material name="industrial_orange"/>
+      <material name="industrial_orange" />
     </visual>
     <collision>
       <origin
@@ -546,7 +554,7 @@
         <mesh
           filename="package://robot_description/meshes/shoulder_link.STL" />
       </geometry>
-      <material name="industrial_orange"/>
+      <material name="industrial_orange" />
     </visual>
     <collision>
       <origin
@@ -603,7 +611,7 @@
         <mesh
           filename="package://robot_description/meshes/elbow_link.STL" />
       </geometry>
-      <material name="industrial_orange"/>
+      <material name="industrial_orange" />
     </visual>
     <collision>
       <origin
@@ -660,7 +668,7 @@
         <mesh
           filename="package://robot_description/meshes/wrist_pitch_link.STL" />
       </geometry>
-      <material name="industrial_orange"/>
+      <material name="industrial_orange" />
     </visual>
     <collision>
       <origin
@@ -717,7 +725,7 @@
         <mesh
           filename="package://robot_description/meshes/wrist_roll_link.STL" />
       </geometry>
-      <material name="sandy_yellow"/>
+      <material name="sandy_yellow" />
     </visual>
     <collision>
       <origin
@@ -751,38 +759,38 @@
       friction="0.1" />
   </joint>
 
-<link name="camera_link">
+  <link name="camera_link">
     <visual>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.01 0.01 0.01"/> 
+        <box size="0.01 0.01 0.01" />
       </geometry>
-      <material name="deep_ocean_blue"/>
+      <material name="deep_ocean_blue" />
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
-        <box size="0.01 0.01 0.01"/>
+        <box size="0.01 0.01 0.01" />
       </geometry>
     </collision>
     <inertial>
-      <mass value="0.01"/>
-      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6"/>
+      <mass value="0.01" />
+      <inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
     </inertial>
   </link>
 
   <joint name="camera_joint" type="fixed">
-    <origin xyz="0.04 0.0 0" rpy="0 0 0" /> 
+    <origin xyz="0.04 0.0 0" rpy="0 0 0" />
     <parent link="wrist_roll_link" />
     <child link="camera_link" />
   </joint>
 
-  <link name="camera_depth_optical_frame"/>
+  <link name="camera_depth_optical_frame" />
 
   <joint name="camera_optical_joint" type="fixed">
     <origin xyz="0 0 0" rpy="-1.5708 0 -1.5708" />
     <parent link="camera_link" />
     <child link="camera_depth_optical_frame" />
   </joint>
-  
+
 </robot>
