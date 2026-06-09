@@ -5,6 +5,7 @@
     <sensor type="depth" name="realsense_d435">
       <always_on>true</always_on>
       <update_rate>30.0</update_rate>
+      <visualize>true</visualize> 
       
       <camera>
         <horizontal_fov>1.50098</horizontal_fov>
@@ -19,31 +20,21 @@
         </clip>
       </camera>
 
-      <plugin name="camera_plugin" filename="libgazebo_ros_openni_kinect.so">
-        <baseline>0.2</baseline>
-        <alwaysOn>true</alwaysOn>
-        <updateRate>0.0</updateRate>
-        <cameraName>camera</cameraName>
-        <imageTopicName>/camera/color/image_raw</imageTopicName>
-        <cameraInfoTopicName>/camera/color/camera_info</cameraInfoTopicName>
-        <depthImageTopicName>/camera/depth/image_raw</depthImageTopicName>
-        <depthImageCameraInfoTopicName>/camera/depth/camera_info</depthImageCameraInfoTopicName>
-        <pointCloudTopicName>/camera/depth/points</pointCloudTopicName>
+      <plugin name="camera_plugin" filename="libgazebo_ros_camera.so">
+        <ros>
+          <namespace>camera</namespace>
+          <remapping>~/image_raw:=color/image_raw</remapping>
+          <remapping>~/camera_info:=color/camera_info</remapping>
+          <remapping>~/depth/image_raw:=depth/image_raw</remapping>
+          <remapping>~/depth/camera_info:=depth/camera_info</remapping>
+          <remapping>~/points:=depth/points</remapping>
+        </ros>
         
-        <frameName>camera_depth_optical_frame</frameName>
+        <camera_name>camera</camera_name>
+        <frame_name>camera_depth_optical_frame</frame_name>
         
-        <pointCloudCutoff>0.1</pointCloudCutoff>
-        <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
-        <distortionK1>0</distortionK1>
-        <distortionK2>0</distortionK2>
-        <distortionK3>0</distortionK3>
-        <distortionT1>0</distortionT1>
-        <distortionT2>0</distortionT2>
-        <CxPrime>0</CxPrime>
-        <Cx>0</Cx>
-        <Cy>0</Cy>
-        <focalLength>0</focalLength>
-        <hackBaseline>0</hackBaseline>
+        <min_depth>0.1</min_depth>
+        <max_depth>10.0</max_depth>
       </plugin>
     </sensor>
   </gazebo>
