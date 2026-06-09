@@ -1,10 +1,12 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_name">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_description">
 
   <xacro:include filename="agrobot_v2_core.xacro" />
   <xacro:include filename="materials.xacro" />
   <xacro:include filename="depth_camera.gazebo.xacro" />
   <xacro:include filename="gazebo_materials.xacro" />
   <xacro:include filename="self-collision.gazebo.xacro" />
-  <xacro:include filename="gazebo_control.xacro" />
+  <!-- <xacro:include filename="gazebo_control.xacro" /> -->
+  <xacro:include filename="ros2_control.xacro" />
+  <xacro:include filename="lidar.xacro" />
 </robot>
