@@ -1,0 +1,92 @@
+<?xml version="1.0"?>
+<robot name="robot_description">
+
+  <!-- ═══════════════════════════════════════════
+       THE ARM PLANNING GROUP
+       This is the chain MoveIt plans motion for.
+       Order matters: base → tip, joint by joint.
+  ════════════════════════════════════════════ -->
+  <group name="arm">
+    <joint name="arm_mount_joint" />
+    <joint name="base_yaw_joint" />
+    <joint name="shoulder_pitch_joint" />
+    <joint name="elbow_pitch_joint" />
+    <joint name="wrist_pitch_joint" />
+    <joint name="wrist_roll_joint" />
+    <joint name="camera_joint" />
+  </group>
+
+  <!-- ═══════════════════════════════════════════
+       END EFFECTOR
+       camera_link is the tip MoveIt plans TO.
+       When you say "reach this XYZ", MoveIt moves
+       camera_link to that position.
+  ════════════════════════════════════════════ -->
+  <end_effector
+    name="nozzle_ee"
+    parent_link="camera_link"
+    group="arm" />
+
+  <!-- ═══════════════════════════════════════════
+       NAMED POSES
+       "home" = safe tucked position on startup.
+       You can add more later (e.g. "scan_pose").
+  ════════════════════════════════════════════ -->
+  <group_state name="home" group="arm">
+    <joint name="base_yaw_joint"       value="0" />
+    <joint name="shoulder_pitch_joint" value="0" />
+    <joint name="elbow_pitch_joint"    value="0" />
+    <joint name="wrist_pitch_joint"    value="0" />
+    <joint name="wrist_roll_joint"     value="0" />
+  </group_state>
+
+  <group_state name="scan_pose" group="arm">
+    <joint name="base_yaw_joint"       value="0" />
+    <joint name="shoulder_pitch_joint" value="0.4" />
+    <joint name="elbow_pitch_joint"    value="-0.4" />
+    <joint name="wrist_pitch_joint"    value="0.3" />
+    <joint name="wrist_roll_joint"     value="0" />
+  </group_state>
+
+  <!-- ═══════════════════════════════════════════
+       DISABLE COLLISIONS
+       Adjacent links touch by design — without
+       this MoveIt thinks the robot is always in
+       collision and refuses to plan anything.
+  ════════════════════════════════════════════ -->
+
+  <!-- Arm chain: each link adjacent to the next -->
+  <disable_collisions link1="arm_base_link"    link2="base_yaw_link"      reason="Adjacent" />
+  <disable_collisions link1="base_yaw_link"    link2="shoulder_link"      reason="Adjacent" />
+  <disable_collisions link1="shoulder_link"    link2="elbow_link"         reason="Adjacent" />
+  <disable_collisions link1="elbow_link"       link2="wrist_pitch_link"   reason="Adjacent" />
+  <disable_collisions link1="wrist_pitch_link" link2="wrist_roll_link"    reason="Adjacent" />
+  <disable_collisions link1="wrist_roll_link"  link2="camera_link"        reason="Adjacent" />
+
+  <!-- Arm mounted on robot body -->
+  <disable_collisions link1="arm_base_link"    link2="base_link"          reason="Adjacent" />
+
+  <!-- Links that can never physically reach each other -->
+  <disable_collisions link1="base_link"        link2="shoulder_link"      reason="Never" />
+  <disable_collisions link1="base_link"        link2="elbow_link"         reason="Never" />
+  <disable_collisions link1="base_link"        link2="lidar_link"         reason="Adjacent" />
+  <disable_collisions link1="arm_base_link"    link2="shoulder_link"      reason="Never" />
+  <disable_collisions link1="arm_base_link"    link2="elbow_link"         reason="Never" />
+  <disable_collisions link1="arm_base_link"    link2="lidar_link"         reason="Never" />
+  <disable_collisions link1="base_yaw_link"    link2="elbow_link"         reason="Never" />
+  <disable_collisions link1="base_yaw_link"    link2="wrist_pitch_link"   reason="Never" />
+  <disable_collisions link1="base_yaw_link"    link2="wrist_roll_link"    reason="Never" />
+  <disable_collisions link1="shoulder_link"    link2="wrist_pitch_link"   reason="Never" />
+  <disable_collisions link1="shoulder_link"    link2="wrist_roll_link"    reason="Never" />
+  <disable_collisions link1="shoulder_link"    link2="camera_link"        reason="Never" />
+  <disable_collisions link1="elbow_link"       link2="camera_link"        reason="Never" />
+
+  <!-- Wheels and castors never interact with arm -->
+  <disable_collisions link1="left_wheel_link"      link2="arm_base_link"    reason="Never" />
+  <disable_collisions link1="right_wheel_link"     link2="arm_base_link"    reason="Never" />
+  <disable_collisions link1="castor_l_wheel_link"  link2="arm_base_link"    reason="Never" />
+  <disable_collisions link1="castor_r_wheel_link"  link2="arm_base_link"    reason="Never" />
+  <disable_collisions link1="left_wheel_link"      link2="base_yaw_link"    reason="Never" />
+  <disable_collisions link1="right_wheel_link"     link2="base_yaw_link"    reason="Never" />
+
+</robot>
