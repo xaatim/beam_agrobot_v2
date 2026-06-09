@@ -1,0 +1,62 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 30
+    use_sim_time: true
+
+    diff_cont:
+      type: diff_drive_controller/DiffDriveController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+diff_cont:
+  ros__parameters:
+    publish_rate: 50.0
+    base_frame_id: base_link
+    
+    # --- SLAM ---
+    odom_frame_id: odom
+    publish_odom: true
+    publish_odom_tf: true
+
+    left_wheel_names: ['left_wheel_joint']
+    right_wheel_names: ['right_wheel_joint']
+    wheel_separation: 0.65666
+    wheel_radius: 0.17572
+    use_stamped_vel: false
+
+    cmd_vel_timeout: 0.25
+
+    # --- FORWARD / BACKWARD ---
+    linear.x.has_velocity_limits: true
+    linear.x.max_velocity: 8.0          
+    linear.x.has_acceleration_limits: true
+    linear.x.max_acceleration: 6.0      
+    linear.x.max_deceleration: 100.0    
+    
+    # --- SPINNING ---
+    angular.z.has_velocity_limits: true
+    angular.z.max_velocity: 6.0      
+    angular.z.has_acceleration_limits: true
+    angular.z.max_acceleration: 8.0      
+    angular.z.max_deceleration: 100.0   
+
+arm_controller:
+  ros__parameters:
+    joints:
+      - base_yaw_joint
+      - shoulder_pitch_joint
+      - elbow_pitch_joint
+      - wrist_pitch_joint
+      - wrist_roll_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
