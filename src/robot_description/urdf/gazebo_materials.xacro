@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_name">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_description">
 
   <gazebo reference="base_link">
     <material>SlateBlue</material>
@@ -30,19 +30,37 @@
   </gazebo>
 
   <gazebo reference="right_wheel_link">
+    <mu1>3.0</mu1>
+    <mu2>3.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
     <material>DarkTeal</material>
   </gazebo>
 
   <gazebo reference="left_wheel_link">
     <material>DarkTeal</material>
+    <mu1>3.0</mu1>
+    <mu2>3.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
+    <minDepth>0.001</minDepth>
   </gazebo>
 
   <gazebo reference="castor_l_wheel_link">
     <material>DarkTeal</material>
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
   </gazebo>
 
   <gazebo reference="castor_r_wheel_link">
     <material>DarkTeal</material>
+    <mu1>0.0</mu1>
+    <mu2>0.0</mu2>
+    <kp>1000000.0</kp>
+    <kd>100.0</kd>
   </gazebo>
 
   <gazebo reference="arm_base_link">
