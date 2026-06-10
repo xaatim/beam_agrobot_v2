@@ -11,14 +11,19 @@ from launch_ros.actions import Node
 def generate_launch_description():
     package_name = 'robot_description'
     urdf_file = 'agrobot_v2.urdf.xacro'
+    world_file = 'agrobot_field.world' 
+    
     pkg_share = get_package_share_directory(package_name)
     urdf_path = os.path.join(pkg_share, 'urdf', urdf_file)
+    world_path = os.path.join(pkg_share, 'worlds', world_file)  
+
     gazebo_ros_pkg = get_package_share_directory('gazebo_ros')
 
     gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             os.path.join(gazebo_ros_pkg, 'launch', 'gazebo.launch.py')
-        )
+        ),
+        launch_arguments={'world': world_path}.items()
     )
 
     robot_state_publisher = Node(
