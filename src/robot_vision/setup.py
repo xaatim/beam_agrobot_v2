@@ -25,6 +25,8 @@ setup(
     entry_points={
         'console_scripts': [
             'arm_test_node = robot_vision.arm_test_node:main',
+            'plant_locator = robot_vision.plant_locator:main',
+            'plant_watering_node = robot_vision.plant_watering_node:main',
         ],
     },
 )
