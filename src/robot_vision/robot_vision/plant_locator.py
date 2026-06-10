@@ -5,17 +5,13 @@ from geometry_msgs.msg import PointStamped
 from cv_bridge import CvBridge
 import message_filters
 import numpy as np
-from ultralytics import YOLOE
+import cv2
 
 
 class CropDetectorNode(Node):
     def __init__(self):
         super().__init__('crop_detector_node')
         self.bridge = CvBridge()
-        self.model = YOLOE("yoloe-26s-seg.pt")
-        self.target_crops = ["tomato plant",
-                            "tomato", "chili plant", "lettuce"]
-        self.model.set_classes(self.target_crops)
 
         self.target_pub = self.create_publisher(
             PointStamped,
@@ -25,7 +21,7 @@ class CropDetectorNode(Node):
 
         self.info_sub = self.create_subscription(
             CameraInfo,
-            '/camera/depth/camera_info',
+            '/camera/camera/depth/camera_info',
             self.camera_info_callback,
             10
         )
@@ -36,9 +32,9 @@ class CropDetectorNode(Node):
         self.cy = 0.0
 
         self.rgb_sub = message_filters.Subscriber(
-            self, Image, '/camera/color/image_raw')
+            self, Image, '/camera/camera/image_raw')
         self.depth_sub = message_filters.Subscriber(
-            self, Image, '/camera/depth/image_raw')
+            self, Image, '/camera/camera/depth/image_raw')
 
         self.sync = message_filters.ApproximateTimeSynchronizer(
             [self.rgb_sub, self.depth_sub],
@@ -46,7 +42,7 @@ class CropDetectorNode(Node):
             slop=0.1
         )
         self.sync.registerCallback(self.synchronized_camera_callback)
-        self.get_logger().info("Agrobot Crop Detector Node Initialized and Waiting for Streams...")
+        self.get_logger().info("Agrobot Fast Sphere Detector Initialized...")
 
     def camera_info_callback(self, msg):
         self.fx = msg.k[0]
@@ -56,7 +52,7 @@ class CropDetectorNode(Node):
         self.intrinsics_loaded = True
         self.destroy_subscription(self.info_sub)
         self.get_logger().info(
-            f"Loaded Intrinsics -> fx: {self.fx}, fy: {self.fy}, cx: {self.cx}, cy: {self.cy}")
+            f"Loaded Intrinsics -> fx: {self.fx:.2f}, fy: {self.fy:.2f}, cx: {self.cx:.2f}, cy: {self.cy:.2f}")
 
     def synchronized_camera_callback(self, rgb_msg, depth_msg):
         if not self.intrinsics_loaded:
@@ -66,44 +62,50 @@ class CropDetectorNode(Node):
         cv_depth = self.bridge.imgmsg_to_cv2(
             depth_msg, desired_encoding='32FC1')
 
-        results = self.model.predict(cv_rgb, conf=0.25, verbose=False)
+        # Convert BGR to HSV for color tracking
+        hsv = cv2.cvtColor(cv_rgb, cv2.COLOR_BGR2HSV)
 
-        for result in results:
-            if result.masks is not None and result.boxes is not None:
-                num_boxes = len(result.boxes)
-                for i in range(num_boxes):
+        lower_red1 = np.array([0, 120, 70])
+        upper_red1 = np.array([10, 255, 255])
+        lower_red2 = np.array([170, 120, 70])
+        upper_red2 = np.array([180, 255, 255])
 
-                    class_id = int(result.boxes.cls[i].item())
-                    label = self.target_crops[class_id] if class_id < len(
-                        self.target_crops) else "unknown"
+        mask1 = cv2.inRange(hsv, lower_red1, upper_red1)
+        mask2 = cv2.inRange(hsv, lower_red2, upper_red2)
+        red_mask = cv2.bitwise_or(mask1, mask2)
 
-                    mask_np = result.masks.data[i].cpu().numpy()
-                    y_indices, x_indices = np.where(mask_np > 0)
+        contours, _ = cv2.findContours(
+            red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-                    if len(y_indices) > 0:
-                        u = int(np.mean(x_indices))
-                        v = int(np.mean(y_indices))
+        for contour in contours:
+            area = cv2.contourArea(contour)
 
-                        if v >= cv_depth.shape[0] or u >= cv_depth.shape[1]:
-                            continue
+            if area > 200:
+                M = cv2.moments(contour)
+                if M["m00"] != 0:
+                    u = int(M["m10"] / M["m00"])
+                    v = int(M["m01"] / M["m00"])
 
-                        Z = cv_depth[v, u]
+                    if v >= cv_depth.shape[0] or u >= cv_depth.shape[1]:
+                        continue
 
-                        if np.isnan(Z) or np.isinf(Z) or Z <= 0.05:
-                            continue
+                    Z = cv_depth[v, u]
 
-                        X = (u - self.cx) * Z / self.fx
-                        Y = (v - self.cy) * Z / self.fy
+                    if np.isnan(Z) or np.isinf(Z) or Z <= 0.05:
+                        continue
 
-                        target_msg = PointStamped()
-                        target_msg.header = rgb_msg.header
-                        target_msg.point.x = float(X)
-                        target_msg.point.y = float(Y)
-                        target_msg.point.z = float(Z)
+                    X = (u - self.cx) * Z / self.fx
+                    Y = (v - self.cy) * Z / self.fy
 
-                        self.target_pub.publish(target_msg)
-                        self.get_logger().info(
-                            f"Detected: {label} at X:{X:.3f}m, Y:{Y:.3f}m, Z:{Z:.3f}m")
+                    target_msg = PointStamped()
+                    target_msg.header = rgb_msg.header
+                    target_msg.point.x = float(X)
+                    target_msg.point.y = float(Y)
+                    target_msg.point.z = float(Z)
+
+                    self.target_pub.publish(target_msg)
+                    self.get_logger().info(
+                        f"Target Locked at X:{X:.3f}m, Y:{Y:.3f}m, Z:{Z:.3f}m")
 
 
 def main(args=None):
@@ -113,8 +115,9 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
-    node.destroy_node()
-    rclpy.shutdown()
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
