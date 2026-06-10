@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<sdf version="1.7">
+  <world name="agrobot_test_field">
+    
+    <physics type="ode">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <model name='potted_target_L1'>
+      <pose>1.5 1.5 0 0 0 0</pose>
+      <static>true</static>
+      <link name='pot'><pose>0 0 0.3 0 0 0</pose>
+        <visual name='visual'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material></visual>
+        <collision name='collision'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry></collision>
+      </link>
+      <link name='tomato'><pose>0 0 0.66 0 0 0</pose>
+        <visual name='visual'><geometry><sphere><radius>0.06</radius></sphere></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Red</name></script></material></visual>
+        <collision name='collision'><geometry><sphere><radius>0.06</radius></sphere></geometry></collision>
+      </link>
+    </model>
+
+    <model name='potted_target_L2'>
+      <pose>2.5 1.5 0 0 0 0</pose>
+      <static>true</static>
+      <link name='pot'><pose>0 0 0.3 0 0 0</pose>
+        <visual name='visual'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material></visual>
+        <collision name='collision'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry></collision>
+      </link>
+      <link name='tomato'><pose>0 0 0.66 0 0 0</pose>
+        <visual name='visual'><geometry><sphere><radius>0.06</radius></sphere></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Red</name></script></material></visual>
+        <collision name='collision'><geometry><sphere><radius>0.06</radius></sphere></geometry></collision>
+      </link>
+    </model>
+
+    <model name='potted_target_L3'>
+      <pose>3.5 1.5 0 0 0 0</pose>
+      <static>true</static>
+      <link name='pot'><pose>0 0 0.3 0 0 0</pose>
+        <visual name='visual'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material></visual>
+        <collision name='collision'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry></collision>
+      </link>
+      <link name='tomato'><pose>0 0 0.66 0 0 0</pose>
+        <visual name='visual'><geometry><sphere><radius>0.06</radius></sphere></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Red</name></script></material></visual>
+        <collision name='collision'><geometry><sphere><radius>0.06</radius></sphere></geometry></collision>
+      </link>
+    </model>
+
+    <model name='potted_target_R1'>
+      <pose>1.5 -1.5 0 0 0 0</pose>
+      <static>true</static>
+      <link name='pot'><pose>0 0 0.3 0 0 0</pose>
+        <visual name='visual'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material></visual>
+        <collision name='collision'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry></collision>
+      </link>
+      <link name='tomato'><pose>0 0 0.66 0 0 0</pose>
+        <visual name='visual'><geometry><sphere><radius>0.06</radius></sphere></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Red</name></script></material></visual>
+        <collision name='collision'><geometry><sphere><radius>0.06</radius></sphere></geometry></collision>
+      </link>
+    </model>
+
+    <model name='potted_target_R2'>
+      <pose>2.5 -1.5 0 0 0 0</pose>
+      <static>true</static>
+      <link name='pot'><pose>0 0 0.3 0 0 0</pose>
+        <visual name='visual'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material></visual>
+        <collision name='collision'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry></collision>
+      </link>
+      <link name='tomato'><pose>0 0 0.66 0 0 0</pose>
+        <visual name='visual'><geometry><sphere><radius>0.06</radius></sphere></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Red</name></script></material></visual>
+        <collision name='collision'><geometry><sphere><radius>0.06</radius></sphere></geometry></collision>
+      </link>
+    </model>
+
+    <model name='potted_target_R3'>
+      <pose>3.5 -1.5 0 0 0 0</pose>
+      <static>true</static>
+      <link name='pot'><pose>0 0 0.3 0 0 0</pose>
+        <visual name='visual'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script></material></visual>
+        <collision name='collision'><geometry><cylinder><radius>0.12</radius><length>0.6</length></cylinder></geometry></collision>
+      </link>
+      <link name='tomato'><pose>0 0 0.66 0 0 0</pose>
+        <visual name='visual'><geometry><sphere><radius>0.06</radius></sphere></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Red</name></script></material></visual>
+        <collision name='collision'><geometry><sphere><radius>0.06</radius></sphere></geometry></collision>
+      </link>
+    </model>
+
+  </world>
+</sdf>
