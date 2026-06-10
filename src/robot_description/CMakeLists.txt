@@ -8,7 +8,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 install(
-  DIRECTORY config launch meshes urdf materials
+  DIRECTORY config launch meshes urdf materials worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
