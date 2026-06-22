@@ -3,9 +3,9 @@
 <package format="3">
   <name>robot_navigation</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Navigation package for Agrobot</description>
   <maintainer email="xayari229@gmail.com">hatim</maintainer>
-  <license>TODO: License declaration</license>
+  <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -16,6 +16,10 @@
   <depend>nav2_bringup</depend>
   <depend>nav2_map_server</depend>
   <depend>teleop_twist_keyboard</depend>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
   
   <export>
     <build_type>ament_cmake</build_type>
