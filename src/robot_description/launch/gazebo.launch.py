@@ -49,7 +49,7 @@ def generate_launch_description():
         arguments=[
             '-entity', 'Beam-AgroBot',
             '-topic', 'robot_description',
-            '-x', '0.0',
+            '-x', '1.0',
             '-y', '0.0',
             '-z', '0.5'
         ],
