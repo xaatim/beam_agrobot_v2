@@ -1,17 +1,21 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
-from geometry_msgs.msg import PointStamped, PoseStamped
+from geometry_msgs.msg import PointStamped
 from moveit_msgs.action import MoveGroup
 from moveit_msgs.msg import (
     MotionPlanRequest,
     Constraints,
-    PositionConstraint,
     JointConstraint,
-    BoundingVolume,
 )
-from shape_msgs.msg import SolidPrimitive
 import time
+import math
+
+from tf2_ros import TransformException
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
+import tf2_geometry_msgs
+
 
 class PlantWateringNode(Node):
 
@@ -21,8 +25,11 @@ class PlantWateringNode(Node):
         self._action_client = ActionClient(
             self,
             MoveGroup,
-            'move_action' 
+            'move_action'
         )
+
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
 
         self.plant_sub = self.create_subscription(
             PointStamped,
@@ -31,73 +38,89 @@ class PlantWateringNode(Node):
             10
         )
 
-        self.busy = False
-        self.get_logger().info('Plant watering node ready. Waiting for targets...')
+        self.busy = True
+        self.get_logger().info('Initializing arm...')
+        self.timer = self.create_timer(2.0, self.init_pose)
+
+    def init_pose(self):
+        self.timer.cancel()
+        self._action_client.wait_for_server()
+        self.move_to_home()
 
     def plant_detection_callback(self, msg):
         if self.busy:
             return
 
-        self.get_logger().info(f'Target received at X:{msg.point.x:.3f} Y:{msg.point.y:.3f} Z:{msg.point.z:.3f}')
+        if msg.point.z > 0.8:
+            return
+
+        self.get_logger().info(
+            f'TARGET IN REACH! Distance: {msg.point.z:.2f}m.')
         self.busy = True
         self.move_arm_to_plant(msg)
 
     def move_arm_to_plant(self, point_msg):
-        self.get_logger().info('Waiting for move_action server...')
+        try:
+            transform = self.tf_buffer.lookup_transform(
+                'base_link',
+                point_msg.header.frame_id,
+                rclpy.time.Time()
+            )
+            base_link_point = tf2_geometry_msgs.do_transform_point(
+                point_msg, transform)
+        except TransformException as ex:
+            self.get_logger().error(f'TF Error: {ex}')
+            self.busy = False
+            return
+
         self._action_client.wait_for_server()
 
-        # Build the target pose
-        target_pose = PoseStamped()
-        target_pose.header = point_msg.header 
-        
-        target_pose.pose.position.x = point_msg.point.x
-        target_pose.pose.position.y = point_msg.point.y
-        target_pose.pose.position.z = point_msg.point.z - 0.15 
-        
-        target_pose.pose.orientation.w = 1.0
-
-        position_constraint = PositionConstraint()
-        position_constraint.header = point_msg.header
-        position_constraint.link_name = 'camera_link'
-
-        bounding_volume = BoundingVolume()
-        primitive = SolidPrimitive()
-        primitive.type = SolidPrimitive.SPHERE
-        primitive.dimensions = [0.05] 
-        bounding_volume.primitives.append(primitive) # type: ignore
-        bounding_volume.primitive_poses.append(target_pose.pose) # type: ignore
-        position_constraint.constraint_region = bounding_volume
-        position_constraint.weight = 1.0
-
-        constraints = Constraints()
-        constraints.position_constraints.append(position_constraint) # type: ignore
+        target_yaw = math.atan2(base_link_point.point.y,
+                                base_link_point.point.x)
 
         request = MotionPlanRequest()
         request.group_name = 'arm'
-        request.goal_constraints.append(constraints) # type: ignore
+        goal_constraints = Constraints()
+
+        joint_names = ['base_yaw_joint', 'shoulder_pitch_joint',
+                       'elbow_pitch_joint', 'wrist_pitch_joint', 'wrist_roll_joint']
+
+        # All joints at 0 except base_yaw which rotates to face the plant.
+        # This is the natural resting pose — fully collision free.
+        # Only the yaw changes, everything else stays flat.
+        target_angles = [target_yaw, 0.0, 0.0, 0.0, 0.0]
+
+        for name, angle in zip(joint_names, target_angles):
+            jc = JointConstraint()
+            jc.joint_name = name
+            jc.position = angle
+            jc.tolerance_above = 0.05
+            jc.tolerance_below = 0.05
+            jc.weight = 1.0
+            goal_constraints.joint_constraints.append(jc)
+
+        request.goal_constraints.append(goal_constraints)
         request.num_planning_attempts = 10
-        request.allowed_planning_time = 5.0
+        request.allowed_planning_time = 10.0
         request.max_velocity_scaling_factor = 0.3
         request.max_acceleration_scaling_factor = 0.3
 
         goal = MoveGroup.Goal()
         goal.request = request
         goal.planning_options.plan_only = False
-        goal.planning_options.replan = True
-        goal.planning_options.replan_attempts = 3
 
-        self.get_logger().info('Sending TRAC-IK Cartesian request...')
+        self.get_logger().info(
+            f'Rotating to plant at yaw={target_yaw:.2f} rads...')
         send_goal_future = self._action_client.send_goal_async(goal)
         send_goal_future.add_done_callback(self.goal_response_callback)
 
     def goal_response_callback(self, future):
         goal_handle = future.result()
         if not goal_handle.accepted:
-            self.get_logger().error('MoveIt rejected the goal. Target is likely out of reach physically.')
+            self.get_logger().error('MoveIt rejected the goal.')
             self.busy = False
             return
-        
-        self.get_logger().info('MoveIt accepted goal — arm is moving to plant!')
+
         result_future = goal_handle.get_result_async()
         result_future.add_done_callback(self.result_callback)
 
@@ -105,27 +128,30 @@ class PlantWateringNode(Node):
         status = future.result().result.error_code.val
 
         if status == 1:
-            self.get_logger().info('SUCCESS: Arm reached the standoff point.')
             self.trigger_watering()
         else:
-            self.get_logger().error(f'MoveIt failed mid-trajectory with error code: {status}')
+            self.get_logger().error(f'MoveIt failed with error code: {status}')
 
-        self.get_logger().info('Folding arm back to home position...')
+        self.get_logger().info('Returning arm to home...')
         self.move_to_home()
 
     def trigger_watering(self):
-        self.get_logger().info('💧 WATER PUMP ON 💧')
+        self.get_logger().info('WATER PUMP ON')
         time.sleep(3.0)
-        self.get_logger().info('💧 WATER PUMP OFF 💧')
+        self.get_logger().info('WATER PUMP OFF')
 
     def move_to_home(self):
         request = MotionPlanRequest()
         request.group_name = 'arm'
-        
+
         goal_constraints = Constraints()
-        joint_names = ['base_yaw_joint', 'shoulder_pitch_joint', 'elbow_pitch_joint', 'wrist_pitch_joint', 'wrist_roll_joint']
-        home_angles = [0.0, -1.0, 1.0, 0.0, 0.0] 
-        
+        joint_names = ['base_yaw_joint', 'shoulder_pitch_joint',
+                       'elbow_pitch_joint', 'wrist_pitch_joint', 'wrist_roll_joint']
+
+        # Natural resting pose — all zeros, base_yaw parked sideways at 1.57
+        # This is exactly where the robot sits at startup, guaranteed collision free
+        home_angles = [1.57, 0.0, 0.0, 0.0, 0.0]
+
         for name, angle in zip(joint_names, home_angles):
             jc = JointConstraint()
             jc.joint_name = name
@@ -133,11 +159,11 @@ class PlantWateringNode(Node):
             jc.tolerance_above = 0.05
             jc.tolerance_below = 0.05
             jc.weight = 1.0
-            goal_constraints.joint_constraints.append(jc) # type: ignore
-            
-        request.goal_constraints.append(goal_constraints) # type: ignore
-        request.num_planning_attempts = 5
-        request.allowed_planning_time = 3.0
+            goal_constraints.joint_constraints.append(jc)
+
+        request.goal_constraints.append(goal_constraints)
+        request.num_planning_attempts = 10
+        request.allowed_planning_time = 10.0
         request.max_velocity_scaling_factor = 0.5
         request.max_acceleration_scaling_factor = 0.5
 
@@ -149,7 +175,7 @@ class PlantWateringNode(Node):
         home_future.add_done_callback(self.home_response_cb)
 
     def home_response_cb(self, future):
-        self.get_logger().info('Arm successfully returned home. Ready for next plant.')
+        self.get_logger().info('Arm ready. Waiting for next plant.')
         self.busy = False
 
 
