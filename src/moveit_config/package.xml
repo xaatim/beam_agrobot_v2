@@ -9,21 +9,17 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <!-- MoveIt core -->
   <exec_depend>moveit_ros_move_group</exec_depend>
   <exec_depend>moveit_ros_planning_interface</exec_depend>
   <exec_depend>moveit_ros_planning</exec_depend>
   <exec_depend>moveit_kinematics</exec_depend>
   <exec_depend>moveit_configs_utils</exec_depend>
 
-  <!-- Controller bridge -->
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>controller_manager</exec_depend>
 
-  <!-- Robot description source -->
   <exec_depend>robot_description</exec_depend>
 
-  <!-- KDL IK solver -->
   <exec_depend>kdl_parser</exec_depend>
 
   <export>

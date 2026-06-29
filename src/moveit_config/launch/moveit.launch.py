@@ -62,9 +62,6 @@ def generate_launch_description():
         "config/ompl_planning.yaml"
     )
 
-    # ---------------------------------------------------------
-    # THE FIX: Nested dictionary exactly as MoveIt 2 expects it
-    # ---------------------------------------------------------
     planning_pipeline_config = {
         "planning_pipelines": ["ompl"],
         "default_planning_pipeline": "ompl",
@@ -74,7 +71,6 @@ def generate_launch_description():
             "start_state_max_bounds_error": 0.1,
         }
     }
-    # Inject your ompl_planning.yaml contents into the "ompl" namespace
     planning_pipeline_config["ompl"].update(ompl_planning_yaml)
 
     trajectory_execution = {
@@ -110,7 +106,7 @@ def generate_launch_description():
             {"robot_description_kinematics": kinematics_yaml},
             joint_limits_yaml,
             moveit_controllers,
-            planning_pipeline_config,  # Passed the nested config here
+            planning_pipeline_config,
             trajectory_execution,
             planning_scene_monitor_parameters,
             {"use_sim_time": True},

@@ -389,9 +389,9 @@ class PlantWateringNode(Node):
             jc.tolerance_above = 0.05
             jc.tolerance_below = 0.05
             jc.weight = 1.0
-            goal_constraints.joint_constraints.append(jc)
+            goal_constraints.joint_constraints.append(jc) # type: ignore
 
-        request.goal_constraints.append(goal_constraints)
+        request.goal_constraints.append(goal_constraints) # type: ignore
         request.num_planning_attempts = 10
         request.allowed_planning_time = 5.0
         request.max_velocity_scaling_factor = 0.4
@@ -446,9 +446,9 @@ class PlantWateringNode(Node):
 
         scan_angles = [
             self.scan_yaw,
-            self.SCAN_SHOULDER,   # 0.4
-            self.SCAN_ELBOW,      # -0.4
-            self.SCAN_WRIST,      # 0.3
+            self.SCAN_SHOULDER,
+            self.SCAN_ELBOW,      
+            self.SCAN_WRIST,     
             0.0
         ]
 
@@ -459,9 +459,9 @@ class PlantWateringNode(Node):
             jc.tolerance_above = 0.05
             jc.tolerance_below = 0.05
             jc.weight = 1.0
-            goal_constraints.joint_constraints.append(jc)
+            goal_constraints.joint_constraints.append(jc) # type: ignore
 
-        request.goal_constraints.append(goal_constraints)
+        request.goal_constraints.append(goal_constraints) # type: ignore
         request.num_planning_attempts = 10
         request.allowed_planning_time = 5.0
         request.max_velocity_scaling_factor = 0.5

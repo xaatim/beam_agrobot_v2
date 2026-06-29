@@ -62,7 +62,6 @@ class CropDetectorNode(Node):
         cv_depth = self.bridge.imgmsg_to_cv2(
             depth_msg, desired_encoding='32FC1')
 
-        # Convert BGR to HSV for color tracking
         hsv = cv2.cvtColor(cv_rgb, cv2.COLOR_BGR2HSV)
 
         lower_red1 = np.array([0, 120, 70])

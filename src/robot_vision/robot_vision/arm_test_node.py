@@ -25,7 +25,6 @@ class ArmTest(Node):
         self.get_logger().info('Hunting for move_action server...')
         self.client.wait_for_server()
 
-        # Cartesian XYZ Target (Simulating a YOLOE detection coordinate)
         target_x = 0.4
         target_y = 0.0
         target_z = 0.5
@@ -38,7 +37,6 @@ class ArmTest(Node):
         pose.pose.position.z = target_z
         pose.pose.orientation.w = 1.0
 
-        # We give the solver a 5cm sphere to aim for
         sphere = SolidPrimitive()
         sphere.type = SolidPrimitive.SPHERE
         sphere.dimensions = [0.05]
@@ -47,7 +45,6 @@ class ArmTest(Node):
         vol.primitives.append(sphere) # type: ignore
         vol.primitive_poses.append(pose.pose) # type: ignore
 
-        # Tie the constraint to your camera link
         constraint = PositionConstraint()
         constraint.header.frame_id = 'base_link'
         constraint.link_name = 'camera_link'
@@ -61,7 +58,6 @@ class ArmTest(Node):
         req.group_name = 'arm'
         req.goal_constraints.append(goal_constraints) # type: ignore
         
-        # Give TRAC-IK plenty of attempts and time to solve the math
         req.num_planning_attempts = 10
         req.allowed_planning_time = 5.0
         req.max_velocity_scaling_factor = 0.3
