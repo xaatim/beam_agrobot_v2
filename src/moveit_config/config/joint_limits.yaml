@@ -3,38 +3,38 @@ joint_limits:
     has_velocity_limits: true
     max_velocity: 1.5
     has_acceleration_limits: true
-    max_acceleration: 1.0
+    max_acceleration: 2.0
     has_effort_limits: true
     max_effort: 30.0
 
   shoulder_pitch_joint:
     has_velocity_limits: true
-    max_velocity: 1.0
+    max_velocity: 1.5
     has_acceleration_limits: true
-    max_acceleration: 0.8
+    max_acceleration: 2.0
     has_effort_limits: true
     max_effort: 40.0
 
   elbow_pitch_joint:
     has_velocity_limits: true
-    max_velocity: 1.5
+    max_velocity: 2.0
     has_acceleration_limits: true
-    max_acceleration: 1.0
+    max_acceleration: 2.5
     has_effort_limits: true
     max_effort: 25.0
 
   wrist_pitch_joint:
     has_velocity_limits: true
-    max_velocity: 2.0
+    max_velocity: 2.5
     has_acceleration_limits: true
-    max_acceleration: 1.5
+    max_acceleration: 3.0
     has_effort_limits: true
     max_effort: 10.0
 
   wrist_roll_joint:
     has_velocity_limits: true
-    max_velocity: 2.0
+    max_velocity: 2.5
     has_acceleration_limits: true
-    max_acceleration: 1.5
+    max_acceleration: 3.0
     has_effort_limits: true
     max_effort: 10.0
