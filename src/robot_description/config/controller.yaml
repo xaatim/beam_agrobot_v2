@@ -55,6 +55,45 @@ arm_controller:
     state_interfaces:
       - position
       - velocity
-    state_publish_rate: 50.0
-    action_monitor_rate: 20.0
+    state_publish_rate: 100.0
+    action_monitor_rate: 50.0
     allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 0.5
+      base_yaw_joint:
+        trajectory: 0.05
+        goal: 0.01
+      shoulder_pitch_joint:
+        trajectory: 0.05
+        goal: 0.01
+      elbow_pitch_joint:
+        trajectory: 0.05
+        goal: 0.01
+      wrist_pitch_joint:
+        trajectory: 0.05
+        goal: 0.01
+      wrist_roll_joint:
+        trajectory: 0.05
+        goal: 0.01
+    gains:
+      base_yaw_joint:
+        p: 50.0
+        i: 0.0
+        d: 5.0
+      shoulder_pitch_joint:
+        p: 80.0
+        i: 0.0
+        d: 8.0
+      elbow_pitch_joint:
+        p: 60.0
+        i: 0.0
+        d: 6.0
+      wrist_pitch_joint:
+        p: 30.0
+        i: 0.0
+        d: 3.0
+      wrist_roll_joint:
+        p: 30.0
+        i: 0.0
+        d: 3.0
