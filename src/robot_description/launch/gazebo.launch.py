@@ -21,7 +21,7 @@ def generate_launch_description():
 
     gazebo_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(gazebo_ros_pkg, 'launch', 'gazebo.launch.py')
+            os.path.join(gazebo_ros_pkg, 'launch', 'gzserver.launch.py')
         ),
         launch_arguments={'world': world_path}.items()
     )
@@ -36,12 +36,6 @@ def generate_launch_description():
         }]
     )
 
-    static_tf = Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name='tf_footprint_base',
-        arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'base_footprint']
-    )
 
     spawn_entity = Node(
         package='gazebo_ros',
@@ -49,7 +43,7 @@ def generate_launch_description():
         arguments=[
             '-entity', 'Beam-AgroBot',
             '-topic', 'robot_description',
-            '-x', '1.0',
+            '-x', '2.0',
             '-y', '0.0',
             '-z', '0.5'
         ],
@@ -101,7 +95,6 @@ def generate_launch_description():
     return LaunchDescription([
         gazebo_launch,
         robot_state_publisher,
-        static_tf,
         spawn_entity,            
         joint_state_broadcaster_spawner, 
         controller_spawner,       
