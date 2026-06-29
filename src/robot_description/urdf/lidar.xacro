@@ -5,11 +5,11 @@
     <sensor name="laser" type="ray">
       <pose> 0 0 0 0 0 0 </pose>
       <visualize>true</visualize>
-      <update_rate>10</update_rate>
+      <update_rate>50</update_rate>
       <ray>
         <scan>
           <horizontal>
-            <samples>360</samples>
+            <samples>720</samples>
             <min_angle>-2.5</min_angle>
             <max_angle>2.5</max_angle>
           </horizontal>
