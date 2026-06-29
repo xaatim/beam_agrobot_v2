@@ -20,7 +20,7 @@ The Beam AgroBot V2 is a fully autonomous mobile manipulation robot designed for
 
 This is the simulation-complete version of the AgroBot platform, serving as the research and development foundation before full hardware deployment. The system integrates SLAM-based mapping, Nav2 autonomous navigation, MoveIt2 arm planning with TRAC-IK kinematics, and a depth-camera-based crop detection pipeline.
 
-The AgroBot V2 is a core product of **[Beam Robotics](https://github.com/xaatim/Beam-Command-Center)** — an applied robotics initiative and prospective startup founded by Hatim Ahmed Hassan. Beam Robotics serves as the unified development umbrella for a portfolio of personal engineering projects focused on building advanced autonomous systems for agriculture, infrastructure, and industrial automation.
+The AgroBot V2 is a core product of **[Beam Robotics](https://github.com/xaatim/Beam-Command-Center)** — an applied robotics initiative and prospective startup founded by **[Hatim Ahmed Hassan](www.linkedin.com/in/hatim-ahmed-713214194)**. Beam Robotics serves as the unified development umbrella for a portfolio of personal engineering projects focused on building advanced autonomous systems for agriculture, infrastructure, and industrial automation.
 
 ---
 
