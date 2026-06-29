@@ -15,6 +15,79 @@
       <uri>model://ground_plane</uri>
     </include>
 
+    <model name='agrobot_walls'>
+      <static>true</static>
+      <pose>2.20715 0.370042 0 0 -0 0</pose>
+      <link name='Wall_1'>
+        <collision name='Wall_1_Collision'>
+          <geometry><box><size>6.5 0.15 2.5</size></box></geometry>
+          <pose>0 0 1.25 0 -0 0</pose>
+        </collision>
+        <visual name='Wall_1_Visual'>
+          <pose>0 0 1.25 0 -0 0</pose>
+          <geometry><box><size>6.5 0.15 2.5</size></box></geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+        <pose>-0 -4.41831 0 0 -0 3.13743</pose>
+      </link>
+      <link name='Wall_3'>
+        <collision name='Wall_3_Collision'>
+          <geometry><box><size>9 0.15 2.5</size></box></geometry>
+          <pose>0 0 1.25 0 -0 0</pose>
+        </collision>
+        <visual name='Wall_3_Visual'>
+          <pose>0 0 1.25 0 -0 0</pose>
+          <geometry><box><size>9 0.15 2.5</size></box></geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+        <pose>-3.175 0.00669 0 0 -0 1.5708</pose>
+      </link>
+      <link name='Wall_4'>
+        <collision name='Wall_4_Collision'>
+          <geometry><box><size>6.50001 0.15 2.5</size></box></geometry>
+          <pose>0 0 1.25 0 -0 0</pose>
+        </collision>
+        <visual name='Wall_4_Visual'>
+          <pose>0 0 1.25 0 -0 0</pose>
+          <geometry><box><size>6.50001 0.15 2.5</size></box></geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+        <pose>-0 4.42508 0 0 -0 -0.002083</pose>
+      </link>
+      <link name='Wall_5'>
+        <collision name='Wall_5_Collision'>
+          <geometry><box><size>9 0.15 2.5</size></box></geometry>
+          <pose>0 0 1.25 0 -0 0</pose>
+        </collision>
+        <visual name='Wall_5_Visual'>
+          <pose>0 0 1.25 0 -0 0</pose>
+          <geometry><box><size>9 0.15 2.5</size></box></geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Bricks</name>
+            </script>
+          </material>
+        </visual>
+        <pose>3.175 -0.006535 0 0 -0 -1.5708</pose>
+      </link>
+    </model>
+
     <model name='potted_target_L1'>
       <pose>1.5 1.5 0 0 0 0</pose>
       <static>true</static>
