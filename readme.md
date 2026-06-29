@@ -243,8 +243,8 @@ The AgroBot V2 is registered and monitored through the **Beam Command Center** �
 
 **Other Beam Robotics products:**
 - [Smart Agricultural Robot V1](https://github.com/xaatim/Smart-Agricultural-Robot) — field-tested precision dosing prototype
-- Beam Access Control System — biometric access, license plate recognition, surveillance
-- Beam Surveillance Bot — autonomous patrol robot with face recognition
+- [Beam Access Control System](https://github.com/xaatim/SmartAccessControl) — biometric access, license plate recognition, surveillance
+- [Beam Surveillance Bot](https://github.com/xaatim/Autonomous_security_robot) — autonomous patrol robot with face recognition
 
 ---
 
