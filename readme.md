@@ -102,7 +102,7 @@ The AgroBot V2 chassis was designed from scratch in SolidWorks, optimized for ag
 
 | End-Effector | RPLiDAR A2 |
 |---|---|
-| ![End Effector](media/renders/render3.png) | ![LiDAR](media/renders/render4.png) |
+| ![End Effector](media/renders/render4.png) | ![LiDAR](media/renders/render5.png) |
 
 </div>
 
