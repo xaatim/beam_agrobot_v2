@@ -2,13 +2,9 @@ import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
 
-from geometry_msgs.msg import PointStamped, PoseStamped, Quaternion, Twist
+from geometry_msgs.msg import PointStamped, PoseStamped, Quaternion
 from moveit_msgs.action import MoveGroup
-from moveit_msgs.msg import (
-    MotionPlanRequest,
-    Constraints,
-    JointConstraint,
-)
+from moveit_msgs.msg import MotionPlanRequest, Constraints, JointConstraint
 from nav2_msgs.action import NavigateToPose
 
 import time
@@ -29,274 +25,316 @@ def yaw_to_quaternion(yaw):
     return q
 
 
+# =======================================================
+# HARDCODED WAYPOINTS FROM WORLD FILE
+#
+# Robot is 0.66m wide (wheel center to wheel center = 0.664m)
+# Pot radius = 0.12m, positioned at y = ±1.5
+# Safe standoff from robot CENTER to pot CENTER:
+#   half_robot_width(0.33) + pot_radius(0.12) + clearance(0.05) = 0.50m
+# So robot center parks at y = 1.5 - 0.50 = 1.0 (left column)
+#                             y = -1.5 + 0.50 = -1.0 (right column)
+#
+# Robot faces forward (yaw=0) the entire time — never rotates.
+# Arm sweeps left (+1.57) for left column, right (-1.57) for right.
+#
+# Tomato z = 0.66m above ground.
+# Arm base is at roughly z=0.28m + robot body height.
+# The arm needs to reach down-and-sideways to z=0.66.
+#
+# TUNE: if robot still clips pots, increase PARK_STANDOFF.
+#       if arm can't reach, decrease PARK_STANDOFF.
+# =======================================================
+
+ROBOT_HEADING = 0.0   # always faces +X direction (forward down the aisle)
+PARK_STANDOFF = 0.50  # distance from robot center to pot center laterally
+
+# Left column pots at y=+1.5, robot parks at y = 1.5 - PARK_STANDOFF
+LEFT_PARK_Y  =  1.5 - PARK_STANDOFF   #  1.0
+RIGHT_PARK_Y = -1.5 + PARK_STANDOFF   # -1.0
+
+# Tomato world z for arm targeting
+TOMATO_Z = 0.66
+
+# Each waypoint: (park_x, park_y, arm_scan_yaw, crop_map_x, crop_map_y)
+# park_x/y   = where robot base_link center should be when watering
+# arm_scan_yaw = direction arm faces to scan (+1.57 left, -1.57 right)
+# crop_map_x/y = exact tomato position for arm IK targeting
+WAYPOINTS = [
+    # --- LEFT COLUMN (y = +1.5), robot parks at y = +1.0 ---
+    # L1
+    (1.5, LEFT_PARK_Y,  1.57, 1.5,  1.5),
+    # L2
+    (2.5, LEFT_PARK_Y,  1.57, 2.5,  1.5),
+    # L3
+    (3.5, LEFT_PARK_Y,  1.57, 3.5,  1.5),
+    # --- RIGHT COLUMN (y = -1.5), robot parks at y = -1.0 ---
+    # R1 — note: robot now faces -X (drove up col1, U-turns, drives back down)
+    # After U-turn robot faces -X so we approach R3 first then R2 then R1
+    # R3
+    (3.5, RIGHT_PARK_Y, -1.57, 3.5, -1.5),
+    # R2
+    (2.5, RIGHT_PARK_Y, -1.57, 2.5, -1.5),
+    # R1
+    (1.5, RIGHT_PARK_Y, -1.57, 1.5, -1.5),
+]
+
+
 class PlantWateringNode(Node):
 
     def __init__(self):
         super().__init__('plant_watering_node')
 
-        self._arm_action_client = ActionClient(self, MoveGroup, 'move_action')
-        self._nav_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+        self._arm_client = ActionClient(self, MoveGroup, 'move_action')
+        self._nav_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
 
-        self.plant_sub = self.create_subscription(
-            PointStamped,
-            '/agrobot/target_watering_point',
-            self.plant_detection_callback,
-            10
+        # -------------------------------------------------------
+        # WAYPOINT STATE MACHINE
+        # We walk through WAYPOINTS in order. Each step:
+        #   1. NAV  → drive base to (park_x, park_y) heading=0
+        #   2. SCAN → rotate arm to scan_yaw (so camera confirms crop)
+        #   3. WATER → extend arm to watering angles
+        #   4. PUMP → water for 3 seconds
+        #   5. RETRACT → return arm to scan pose
+        #   6. next waypoint
+        # Between col1 and col2 there is a U-turn nav step.
+        # -------------------------------------------------------
+        self.waypoint_index = 0
+        self.state = 'INIT'
+        self.busy = True
+
+        # Current crop target for arm IK (set from WAYPOINTS)
+        self.current_crop_x = 0.0
+        self.current_crop_y = 0.0
+        self.current_crop_z = TOMATO_Z
+
+        # -------------------------------------------------------
+        # ARM ANGLES — tune these if end effector misses the crop
+        #
+        # WATER pose: shoulder lifts arm up, elbow folds it over,
+        # wrist tips end effector downward toward the tomato.
+        # Start with these values and adjust:
+        #   shoulder too low → increase WATER_SHOULDER toward 1.0
+        #   arm not reaching far enough → decrease WATER_ELBOW (more negative)
+        #   tip pointing wrong way → adjust WATER_WRIST
+        # -------------------------------------------------------
+        self.WATER_SHOULDER = 0.8
+        self.WATER_ELBOW    = -1.2
+        self.WATER_WRIST    = 0.5
+
+        # SCAN pose: lighter position, arm held sideways to see crops
+        self.SCAN_SHOULDER  = 0.4
+        self.SCAN_ELBOW     = -0.4
+        self.SCAN_WRIST     = 0.3
+
+        self.get_logger().info('Agrobot V5 — hardcoded waypoint mode. Starting...')
+        self.create_timer(2.0, self._init)
+
+    # =======================================================
+    # INIT
+    # =======================================================
+
+    def _init(self):
+        # Only fires once
+        self.destroy_timer(list(self._timers)[0])
+        self._arm_client.wait_for_server()
+        self._nav_client.wait_for_server()
+        self.get_logger().info('Servers ready. Starting waypoint sequence.')
+        self._next_waypoint()
+
+    # =======================================================
+    # WAYPOINT SEQUENCER
+    # =======================================================
+
+    def _next_waypoint(self):
+        if self.waypoint_index >= len(WAYPOINTS):
+            self.get_logger().info('ALL CROPS WATERED. Mission complete.')
+            return
+
+        park_x, park_y, scan_yaw, crop_x, crop_y = WAYPOINTS[self.waypoint_index]
+        self.get_logger().info(
+            f'=== Waypoint {self.waypoint_index + 1}/{len(WAYPOINTS)} '
+            f'→ park at ({park_x}, {park_y:.2f}) ==='
         )
 
-        self.busy = True
-        self.standoff_distance = 0.55  
-        
-        self.watered_plants = [] 
-        self.scan_yaw = 1.57          
-        self.time_without_plant = 0.0 
-        self.is_recovering_from_water = False
-        
-        # Tracks what Nav2 is currently doing
-        self.nav_state = 'IDLE'
+        self.current_scan_yaw  = scan_yaw
+        self.current_crop_x    = crop_x
+        self.current_crop_y    = crop_y
+        self.current_crop_z    = TOMATO_Z
 
-        self.get_logger().info('Initializing Agrobot Rail-Walker V3...')
-        self.timer = self.create_timer(2.0, self.init_pose)
-        
-        self.search_timer = self.create_timer(1.0, self.search_step_callback)
-
-    def init_pose(self):
-        self.timer.cancel()
-        self._arm_action_client.wait_for_server()
-        self.move_to_scan_pose(after_watering=False)
-
-    # =======================================================
-    # SWEEP & U-TURN LOGIC (NAV2 DRIVEN)
-    # =======================================================
-
-    def search_step_callback(self):
-        if self.busy:
-            return
-            
-        self.time_without_plant += 1.0
-        
-        if self.time_without_plant >= 4.0:
-            self.time_without_plant = 0.0
-            self.scan_yaw -= 0.26  
-            
-            if self.scan_yaw < 0.0:
-                self.busy = True
-                self.execute_u_turn()
-            else:
-                self.get_logger().info(f'Sweeping arm forward to {self.scan_yaw:.2f} rads...')
-                self.busy = True
-                self.move_to_scan_pose(after_watering=False)
-
-    def execute_u_turn(self):
-        self.get_logger().info('>>> END OF COLUMN. EXECUTING 180 U-TURN VIA NAV2 <<<')
-        try:
-            trans_robot = self.tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
-            
-            q = trans_robot.transform.rotation
-            siny_cosp = 2 * (q.w * q.z + q.x * q.y)
-            cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z)
-            current_yaw = math.atan2(siny_cosp, cosy_cosp)
-            
-            # Add 180 degrees
-            new_yaw = current_yaw + math.pi 
-            
-            goal_pose = PoseStamped()
-            goal_pose.header.frame_id = 'map'
-            goal_pose.pose.position.x = trans_robot.transform.translation.x
-            goal_pose.pose.position.y = trans_robot.transform.translation.y
-            goal_pose.pose.orientation = yaw_to_quaternion(new_yaw)
-
-            self.send_nav2_goal(goal_pose, 'U_TURN')
-        except Exception as e:
-            self.get_logger().error(f'TF Error on U-Turn: {e}')
-            self.busy = False
-
-    def advance_forward(self):
-        self.get_logger().info('Arm clear. Advancing 40cm forward down aisle...')
-        try:
-            # Create a point 40cm straight ahead of the robot
-            local_forward = PointStamped()
-            local_forward.header.frame_id = 'base_link'
-            local_forward.header.stamp = self.get_clock().now().to_msg()
-            local_forward.point.x = 0.40 
-
-            trans_robot = self.tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
-            map_forward = tf2_geometry_msgs.do_transform_point(local_forward, trans_robot)
-
-            goal_pose = PoseStamped()
-            goal_pose.header.frame_id = 'map'
-            goal_pose.pose.position.x = map_forward.point.x
-            goal_pose.pose.position.y = map_forward.point.y
-            goal_pose.pose.orientation = trans_robot.transform.rotation # Keep same heading
-
-            self.send_nav2_goal(goal_pose, 'ADVANCE_FORWARD')
-        except Exception as e:
-            self.get_logger().error(f'TF Error advancing: {e}')
-            self.busy = False
-
-
-    # =======================================================
-    # LANE CHANGE NAVIGATION
-    # =======================================================
-
-    def plant_detection_callback(self, msg):
-        if self.busy:
-            return
-
-        try:
-            trans_map = self.tf_buffer.lookup_transform(
-                'map', msg.header.frame_id, rclpy.time.Time(),
-                timeout=rclpy.duration.Duration(seconds=0.5)
-            )
-            plant_map = tf2_geometry_msgs.do_transform_point(msg, trans_map)
-
-            for wx, wy in self.watered_plants:
-                dist_to_watered = math.hypot(plant_map.point.x - wx, plant_map.point.y - wy)
-                if dist_to_watered < 0.8: 
-                    return
-
-            trans_base = self.tf_buffer.lookup_transform(
-                'base_link', msg.header.frame_id, rclpy.time.Time(),
-                timeout=rclpy.duration.Duration(seconds=0.5)
-            )
-            plant_base_link = tf2_geometry_msgs.do_transform_point(msg, trans_base)
-
-            trans_robot = self.tf_buffer.lookup_transform(
-                'map', 'base_link', rclpy.time.Time(),
-                timeout=rclpy.duration.Duration(seconds=0.5)
-            )
-        except TransformException:
-            return
-
-        # DISTANCE FILTER FIX: Ignore plants that are more than 1.2m away or behind the robot
-        forward_shift = plant_base_link.point.x 
-        if forward_shift > 1.2 or forward_shift < -0.1:
-            return
-
-        self.busy = True
-        self.time_without_plant = 0.0  
-        
-        is_left = plant_base_link.point.y > 0
-        self.scan_yaw = 1.57 if is_left else -1.57
-        
-        self.get_logger().info('Target locked! Calculating lane-change approach...')
-
-        self.current_target_map_x = plant_map.point.x
-        self.current_target_map_y = plant_map.point.y
-        self.current_target_map_z = plant_map.point.z
-
-        if is_left:
-            lateral_shift = plant_base_link.point.y - self.standoff_distance
+        # Check if this is the U-turn transition (col1→col2)
+        # That happens between index 2 (L3) and index 3 (R3).
+        # We detect it by a sign change in park_y vs previous waypoint.
+        if self.waypoint_index == 3:
+            self.get_logger().info('Column 1 done. Executing U-turn to column 2...')
+            self._nav_to_uturn_position(park_x, park_y)
         else:
-            lateral_shift = plant_base_link.point.y + self.standoff_distance
+            self._nav_to_park(park_x, park_y)
 
-        if abs(forward_shift) < 0.15 and abs(lateral_shift) < 0.15:
-            self.get_logger().info('Perfectly parked in lane. Deploying arm.')
-            self.move_arm_to_plant()
-        else:
-            self.get_logger().info(f'Changing lanes: Forward {forward_shift:.2f}m, Sideways {lateral_shift:.2f}m...')
+    def _nav_to_park(self, park_x, park_y):
+        """Drive base to exact parking spot, robot always faces +X."""
+        self.get_logger().info(f'Navigating to park position ({park_x}, {park_y:.2f})...')
+        goal_pose = PoseStamped()
+        goal_pose.header.frame_id = 'map'
+        goal_pose.header.stamp = self.get_clock().now().to_msg()
+        goal_pose.pose.position.x = park_x
+        goal_pose.pose.position.y = park_y
+        goal_pose.pose.position.z = 0.0
+        # Robot always faces forward along X axis — never rotates toward crop
+        goal_pose.pose.orientation = yaw_to_quaternion(ROBOT_HEADING)
+        self._send_nav(goal_pose, 'PARK')
 
-            local_parking_spot = PointStamped()
-            local_parking_spot.header.frame_id = 'base_link'
-            local_parking_spot.header.stamp = self.get_clock().now().to_msg()
-            local_parking_spot.point.x = forward_shift
-            local_parking_spot.point.y = lateral_shift
-            local_parking_spot.point.z = 0.0
+    def _nav_to_uturn_position(self, park_x, park_y):
+        """
+        U-turn: robot needs to end up at the first right-column
+        waypoint, but facing -X (back down the aisle).
+        After the U-turn the robot faces -X so heading = pi.
+        Right column waypoints are ordered R3→R2→R1 (decreasing X)
+        so the robot always drives forward (in its new -X direction).
+        """
+        self.get_logger().info('U-turn nav: driving to right column start...')
+        goal_pose = PoseStamped()
+        goal_pose.header.frame_id = 'map'
+        goal_pose.header.stamp = self.get_clock().now().to_msg()
+        goal_pose.pose.position.x = park_x
+        goal_pose.pose.position.y = park_y
+        goal_pose.pose.position.z = 0.0
+        # Face -X after U-turn
+        goal_pose.pose.orientation = yaw_to_quaternion(math.pi)
+        self._send_nav(goal_pose, 'UTURN')
 
-            map_parking_spot = tf2_geometry_msgs.do_transform_point(local_parking_spot, trans_robot)
+    # =======================================================
+    # NAV2
+    # =======================================================
 
-            goal_pose = PoseStamped()
-            goal_pose.header.frame_id = 'map'
-            goal_pose.pose.position.x = map_parking_spot.point.x
-            goal_pose.pose.position.y = map_parking_spot.point.y
-            goal_pose.pose.orientation = trans_robot.transform.rotation
+    def _send_nav(self, pose, label):
+        self.nav_label = label
+        goal = NavigateToPose.Goal()
+        goal.pose = pose
+        fut = self._nav_client.send_goal_async(goal)
+        fut.add_done_callback(self._nav_goal_cb)
 
-            self.send_nav2_goal(goal_pose, 'APPROACH_PLANT')
-
-    def send_nav2_goal(self, pose, state_name):
-        self._nav_action_client.wait_for_server()
-        self.nav_state = state_name
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose = pose
-        send_goal_future = self._nav_action_client.send_goal_async(goal_msg)
-        send_goal_future.add_done_callback(self.nav_goal_response_cb)
-
-    def nav_goal_response_cb(self, future):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
-            self.busy = False
+    def _nav_goal_cb(self, future):
+        handle = future.result()
+        if not handle.accepted:
+            self.get_logger().error(f'Nav2 rejected goal [{self.nav_label}]')
             return
-        result_future = goal_handle.get_result_async()
-        result_future.add_done_callback(self.nav_result_cb)
+        handle.get_result_async().add_done_callback(self._nav_result_cb)
 
-    def nav_result_cb(self, future):
-        result = future.result()
-        if result.status == 4:
-            if self.nav_state == 'APPROACH_PLANT':
-                self.get_logger().info('Lane change successful! Deploying arm...')
-                self.move_arm_to_plant()
-            elif self.nav_state == 'ADVANCE_FORWARD':
-                self.get_logger().info('Advance complete. Resuming patrol...')
-                self.busy = False
-            elif self.nav_state == 'U_TURN':
-                self.get_logger().info('U-Turn complete. Ready for Column 2...')
-                self.scan_yaw = 1.57 # Always scan left after a U-Turn
-                self.time_without_plant = 0.0
-                self.move_to_scan_pose(after_watering=False)
-        else:
-            self.get_logger().error(f'Nav2 failed state: {self.nav_state}')
-            self.busy = False
+    def _nav_result_cb(self, future):
+        status = future.result().status
+        if status != 4:
+            self.get_logger().error(
+                f'Nav2 FAILED (status {status}) [{self.nav_label}]'
+            )
+            return
+
+        if self.nav_label == 'PARK':
+            self.get_logger().info('Parked. Moving arm to scan pose...')
+            self._move_arm_scan()
+
+        elif self.nav_label == 'UTURN':
+            self.get_logger().info('U-turn complete. Moving arm to scan pose...')
+            # After U-turn heading is now -X, update ROBOT_HEADING
+            # for subsequent advance moves (not needed since waypoints
+            # are hardcoded, but good to log)
+            self._move_arm_scan()
+
+        elif self.nav_label == 'ADVANCE':
+            self.get_logger().info('Advanced. Moving to next waypoint...')
+            self.waypoint_index += 1
+            self._next_waypoint()
 
     # =======================================================
-    # ARM REACHING LOGIC 
+    # ARM — SCAN POSE
     # =======================================================
 
-    def move_arm_to_plant(self):
+    def _move_arm_scan(self):
+        """Rotate arm to scan_yaw with light scan angles."""
+        self.get_logger().info(
+            f'Arm to scan pose at yaw={self.current_scan_yaw:.2f}...'
+        )
+        angles = [
+            self.current_scan_yaw,
+            self.SCAN_SHOULDER,
+            self.SCAN_ELBOW,
+            self.SCAN_WRIST,
+            0.0
+        ]
+        self._send_arm(angles, 'SCAN')
+
+    # =======================================================
+    # ARM — WATER POSE
+    # =======================================================
+
+    def _move_arm_water(self):
+        """
+        Compute yaw from base_link to crop then apply watering angles.
+        Even though we know the exact crop position, we still compute
+        yaw dynamically from TF so small parking errors are compensated.
+        """
         try:
             map_pt = PointStamped()
             map_pt.header.frame_id = 'map'
-            map_pt.header.stamp = rclpy.time.Time().to_msg()
-            map_pt.point.x = self.current_target_map_x
-            map_pt.point.y = self.current_target_map_y
-            map_pt.point.z = self.current_target_map_z
+            map_pt.header.stamp = self.get_clock().now().to_msg()
+            map_pt.point.x = self.current_crop_x
+            map_pt.point.y = self.current_crop_y
+            map_pt.point.z = self.current_crop_z
 
-            transform = self.tf_buffer.lookup_transform(
+            tf = self.tf_buffer.lookup_transform(
                 'base_link', 'map', rclpy.time.Time(),
-                timeout=rclpy.duration.Duration(seconds=0.5)
+                timeout=rclpy.duration.Duration(seconds=1.0)
             )
-            base_link_point = tf2_geometry_msgs.do_transform_point(map_pt, transform)
-        except TransformException:
-            self.busy = False
+            pt_base = tf2_geometry_msgs.do_transform_point(map_pt, tf)
+        except TransformException as e:
+            self.get_logger().error(f'TF error for arm water: {e}')
             return
 
-        self._arm_action_client.wait_for_server()
+        target_yaw = math.atan2(pt_base.point.y, pt_base.point.x)
+        self.get_logger().info(
+            f'Arm watering: yaw={target_yaw:.2f} '
+            f'shoulder={self.WATER_SHOULDER} '
+            f'elbow={self.WATER_ELBOW} '
+            f'wrist={self.WATER_WRIST}'
+        )
 
-        target_yaw = math.atan2(base_link_point.point.y, base_link_point.point.x)
+        angles = [
+            target_yaw,
+            self.WATER_SHOULDER,
+            self.WATER_ELBOW,
+            self.WATER_WRIST,
+            0.0
+        ]
+        self._send_arm(angles, 'WATER')
+
+    # =======================================================
+    # ARM — SEND GOAL
+    # =======================================================
+
+    def _send_arm(self, joint_angles, label):
+        self.arm_label = label
+        joint_names = [
+            'base_yaw_joint', 'shoulder_pitch_joint',
+            'elbow_pitch_joint', 'wrist_pitch_joint', 'wrist_roll_joint'
+        ]
 
         request = MotionPlanRequest()
         request.group_name = 'arm'
-        goal_constraints = Constraints()
-        joint_names = ['base_yaw_joint', 'shoulder_pitch_joint',
-                       'elbow_pitch_joint', 'wrist_pitch_joint', 'wrist_roll_joint']
+        constraints = Constraints()
 
-        # THE ARM FIX:
-        # Reduced the pitch values significantly. 
-        # If the arm still points up instead of down, change these to negative numbers (e.g. -0.15)
-        target_angles = [target_yaw, 0.15, 0.15, 0.0, 0.0]
-
-        for name, angle in zip(joint_names, target_angles):
+        for name, angle in zip(joint_names, joint_angles):
             jc = JointConstraint()
             jc.joint_name = name
             jc.position = angle
             jc.tolerance_above = 0.05
             jc.tolerance_below = 0.05
             jc.weight = 1.0
-            goal_constraints.joint_constraints.append(jc)
+            constraints.joint_constraints.append(jc)
 
-        request.goal_constraints.append(goal_constraints)
+        request.goal_constraints.append(constraints)
         request.num_planning_attempts = 10
         request.allowed_planning_time = 5.0
         request.max_velocity_scaling_factor = 0.4
@@ -306,72 +344,70 @@ class PlantWateringNode(Node):
         goal.request = request
         goal.planning_options.plan_only = False
 
-        self.get_logger().info(f'Deploying arm... Yaw: {target_yaw:.2f}')
-        send_goal_future = self._arm_action_client.send_goal_async(goal)
-        send_goal_future.add_done_callback(self.arm_goal_response_callback)
+        fut = self._arm_client.send_goal_async(goal)
+        fut.add_done_callback(self._arm_goal_cb)
 
-    def arm_goal_response_callback(self, future):
-        goal_handle = future.result()
-        if not goal_handle.accepted:
-            self.busy = False
+    def _arm_goal_cb(self, future):
+        handle = future.result()
+        if not handle.accepted:
+            self.get_logger().error(f'MoveIt rejected arm goal [{self.arm_label}]')
             return
-        result_future = goal_handle.get_result_async()
-        result_future.add_done_callback(self.arm_result_callback)
+        handle.get_result_async().add_done_callback(self._arm_result_cb)
 
-    def arm_result_callback(self, future):
+    def _arm_result_cb(self, future):
         status = future.result().result.error_code.val
 
-        if status == 1:
-            self.trigger_watering()
-            self.watered_plants.append((self.current_target_map_x, self.current_target_map_y))
-            self.get_logger().info(f'Plant marked. Total watered: {len(self.watered_plants)}')
-        
-        self.get_logger().info('Returning arm to scan pose...')
-        self.move_to_scan_pose(after_watering=True)
+        if self.arm_label == 'SCAN':
+            # Arrived at scan pose — now extend to water
+            if status == 1:
+                self.get_logger().info('Scan pose reached. Extending arm to water...')
+                self._move_arm_water()
+            else:
+                self.get_logger().error(f'Scan pose failed (code {status}). Skipping crop.')
+                self._retract_and_advance()
 
-    def trigger_watering(self):
+        elif self.arm_label == 'WATER':
+            if status == 1:
+                self.get_logger().info('Arm at water position. Pumping...')
+                self._pump()
+            else:
+                self.get_logger().error(f'Water pose failed (code {status}). Skipping crop.')
+            self._retract_and_advance()
+
+        elif self.arm_label == 'RETRACT':
+            # Arm back to scan pose — advance to next waypoint
+            self.get_logger().info('Arm retracted. Advancing to next waypoint...')
+            self._advance_to_next()
+
+    # =======================================================
+    # PUMP
+    # =======================================================
+
+    def _pump(self):
         self.get_logger().info('>>> WATER PUMP ON <<<')
-        time.sleep(3.0) 
+        time.sleep(3.0)
         self.get_logger().info('>>> WATER PUMP OFF <<<')
 
-    def move_to_scan_pose(self, after_watering=False):
-        self.is_recovering_from_water = after_watering
-        request = MotionPlanRequest()
-        request.group_name = 'arm'
+    # =======================================================
+    # RETRACT ARM THEN ADVANCE
+    # =======================================================
 
-        goal_constraints = Constraints()
-        joint_names = ['base_yaw_joint', 'shoulder_pitch_joint',
-                       'elbow_pitch_joint', 'wrist_pitch_joint', 'wrist_roll_joint']
+    def _retract_and_advance(self):
+        """Return arm to scan pose (same yaw, scan angles) before moving base."""
+        self.get_logger().info('Retracting arm to scan pose...')
+        angles = [
+            self.current_scan_yaw,
+            self.SCAN_SHOULDER,
+            self.SCAN_ELBOW,
+            self.SCAN_WRIST,
+            0.0
+        ]
+        self._send_arm(angles, 'RETRACT')
 
-        scan_angles = [self.scan_yaw, 0.4, -0.4, 0.3, 0.0]
-
-        for name, angle in zip(joint_names, scan_angles):
-            jc = JointConstraint()
-            jc.joint_name = name
-            jc.position = angle
-            jc.tolerance_above = 0.05
-            jc.tolerance_below = 0.05
-            jc.weight = 1.0
-            goal_constraints.joint_constraints.append(jc)
-
-        request.goal_constraints.append(goal_constraints)
-        request.num_planning_attempts = 10
-        request.allowed_planning_time = 5.0
-        request.max_velocity_scaling_factor = 0.5
-        request.max_acceleration_scaling_factor = 0.5
-
-        goal = MoveGroup.Goal()
-        goal.request = request
-        goal.planning_options.plan_only = False
-
-        home_future = self._arm_action_client.send_goal_async(goal)
-        home_future.add_done_callback(self.scan_response_cb)
-
-    def scan_response_cb(self, future):
-        if self.is_recovering_from_water:
-            self.advance_forward()
-        else:
-            self.busy = False
+    def _advance_to_next(self):
+        """Increment waypoint index and go."""
+        self.waypoint_index += 1
+        self._next_waypoint()
 
 
 def main(args=None):
@@ -384,6 +420,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
