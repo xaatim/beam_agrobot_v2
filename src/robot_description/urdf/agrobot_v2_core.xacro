@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_description">
 
   <link name="base_footprint" />
@@ -13,7 +12,7 @@
   <link name="base_link">
     <inertial>
       <origin
-        xyz="-0.041773 1.1066E-07 0.0086049"
+        xyz="0.408727 1.1066E-07 0.0086049"
         rpy="0 0 0" />
       <mass
         value="234.66" />
@@ -27,7 +26,7 @@
     </inertial>
     <visual>
       <origin
-        xyz="0 0 0"
+        xyz="0.4505 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
@@ -37,7 +36,7 @@
     </visual>
     <collision>
       <origin
-        xyz="0 0 0"
+        xyz="0.4505 0 0"
         rpy="0 0 0" />
       <geometry>
         <mesh
@@ -85,7 +84,7 @@
   <joint name="lidar_joint"
     type="fixed">
     <origin
-      xyz="0.4435 0 0.2"
+      xyz="0.894 0 0.2"
       rpy="0 0 0" />
     <parent
       link="base_link" />
@@ -134,7 +133,7 @@
   <joint name="right_wheel_joint"
     type="continuous">
     <origin
-      xyz="-0.4505 -0.332 -0.1041"
+      xyz="0 -0.331 -0.1041"
       rpy="-1.5708 0 0" />
     <parent
       link="base_link" />
@@ -189,7 +188,7 @@
   <joint name="left_wheel_joint"
     type="continuous">
     <origin
-      xyz="-0.45056 0.332 -0.10407"
+      xyz="-0.00006 0.331 -0.10407"
       rpy="-1.5708 0 0" />
     <parent
       link="base_link" />
@@ -244,7 +243,7 @@
   <joint name="castor_l_swivel_joint"
     type="continuous">
     <origin
-      xyz="0.398 0.2 -0.10453"
+      xyz="0.8485 0.2 -0.10453"
       rpy="0 0 0" />
     <parent
       link="base_link" />
@@ -354,7 +353,7 @@
   <joint name="castor_r_swivel_joint"
     type="continuous">
     <origin
-      xyz="0.398 -0.2 -0.10453"
+      xyz="0.8485 -0.2 -0.10453"
       rpy="0 0 0" />
     <parent
       link="base_link" />
@@ -464,7 +463,7 @@
   <joint name="arm_mount_joint"
     type="fixed">
     <origin
-      xyz="0.10524 0 0.19682"
+      xyz="0.55574 0 0.19682"
       rpy="0 0 0" />
     <parent
       link="base_link" />
