@@ -179,21 +179,23 @@ Y = (v - cy) * Z / fy
 - [ ] Full pipeline integration (Nav2 → detect → arm → water)
 - [ ] Beam Command Center dashboard integration
 
-### V3 — Advanced Systems & Fleet Monitoring (In Development)
-- [ ] **GPS/GNSS Integration:** For precise global tracking across large outdoor agricultural fields.
-- [ ] **Battery SOC Monitoring:** Real-time State of Charge tracking with autonomous return-to-base charging capabilities.
-- [ ] Multi-robot namespace architecture
-- [ ] Boustrophedon path planning (full row coverage)
-- [ ] Inter-robot task allocation and fleet monitoring on Beam Command Center
-- [ ] Auto-mapping on first run (exploration behavior)
+### V3 — Advanced Systems & Digital Twin Upgrades (Simulation)
+- [ ] **Drivetrain Upgrade (Tank Treads):** Simulating the transition to continuous tank treads for zero-degree spin-in-place turns inside tight crop rows.
+- [ ] **Arm Upgrade (6-DOF):** Upgrading the simulated manipulator to 6-DOF to test complex nozzle orientations (e.g., spraying upwards underneath leaves).
+- [ ] **Global Vision Upgrade:** Adding a simulated static, mast-mounted global depth camera to complement the eye-in-hand camera, preventing foliage from blocking the primary Field of View.
+- [ ] **Terrain Safety (Cliff Detection):** Integrating simulated downward-facing IR sensors into the local costmap to detect sudden drops or holes, triggering dynamic avoidance.
+- [ ] **3D SLAM & Perception:** Upgrading from 2D LiDAR to a simulated 3D LiDAR (e.g., Velodyne VLP-16) combined with depth camera fusion to generate full 3D environmental point clouds (OctoMap/RTAB-Map).
+- [ ] **GPS/GNSS Integration:** Simulating global satellite tracking for precise localization across large outdoor agricultural fields.
+- [ ] **Battery SOC Monitoring:** Implementing simulated State of Charge (SOC) tracking to trigger autonomous return-to-base charging behaviors.
+- [ ] **Mobile Manipulation Coordination:** Implementing base-arm synergy. If a detected crop is outside the arm's workspace, the robot automatically calculates the required offset, navigates the base to the optimal parking distance, and resumes the arm trajectory.
+- [ ] **Autonomous Crop-Row Task Planning:** Integrating Nav2 Behavior Trees (BT.CPP) to execute high-level agricultural logic: autonomously scan the field, align the chassis, and sequentially move down the line watering each plant.
+- [ ] **Fleet Coordination:** Implementing multi-robot namespace architecture and inter-robot task allocation to simulate multiple Agrobots working simultaneously in the same field.
 
-### V4 — Hardware Overhaul & Field Deployment
-- [ ] **Drivetrain Upgrade (Tank Treads):** Transitioning from differential castors to continuous tank treads to distribute the 234kg weight, allowing seamless traversal over mud soft soil and zero-degree spin-in-place turns inside tight crop rows.
-- [ ] **Arm Upgrade (6-DOF):** Upgrading the manipulator from 5-DOF to 6-DOF to allow complex nozzle orientations (e.g., spraying upwards underneath leaves).
-- [ ] **Vision Upgrade:** Adding a static, mast-mounted global depth camera to complement the eye-in-hand RealSense camera, preventing foliage from blocking the Field of View.
-- [ ] Real hardware build and assembly
-- [ ] ROS2 Control hardware interface mapping
-- [ ] Field testing, calibration, and Beam Command Center live integration
+### V4 — Physical Hardware Build & Field Deployment
+- [ ] Real-world chassis machining and hardware assembly (Tank treads, 6-DOF arm, dual cameras, IR sensors).
+- [ ] ROS2 Control hardware interface mapping (bridging simulation code to physical motor drivers).
+- [ ] Real-world YOLO vision pipeline integration.
+- [ ] Field testing, sensor calibration, and Beam Command Center live integration.
 
 ---
 
