@@ -158,6 +158,15 @@ Y = (v - cy) * Z / fy
 
 ## Roadmap & Hardware Evolution
 
+### V1 — Field Prototype (Archived)
+- [x] ESP32 + ESP32-CAM edge architecture
+- [x] Python-based socket server for hardware control
+- [x] YOLO-World zero-shot crop detection
+- [x] Ultrasonic sensor integration for precise dosing distance calculation
+- [x] Fixed-position 3D printed dosing arm
+- [x] Teleoperated / manual navigation
+- [x] Validation of the vision-to-pump actuation loop
+
 ### V2 — Current (Simulation Complete)
 - [x] Full SolidWorks chassis design (900mm length)
 - [x] URDF/Xacro with Gazebo plugins
