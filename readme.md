@@ -141,23 +141,24 @@ The 5-DOF arm is controlled via MoveIt2 with the TRAC-IK kinematics solver. TRAC
 
 </div>
 
-The `CropDetectorNode` uses synchronized RGB and depth image streams from the RealSense camera. It converts the RGB frame to HSV color space for robust detection under varying lighting conditions, applies a dual-range red mask to handle HSV wrap-around, then filters contours by area and circularity to isolate spherical crop targets and reject background geometry.
+The `CropDetectorNode` uses synchronized RGB and depth image streams from the RealSense camera to locate and target plants. 
 
-For each valid detection, the node back-projects the 2D centroid pixel to a 3D point in camera space using the camera intrinsic parameters:
+**Simulation vs. Real-World Pipeline:**
+* **Simulation (Gazebo):** For testing kinematics and navigation in Gazebo, the crops are represented as red spheres. The node utilizes an HSV color-space mask to reliably isolate these placeholders, filtering contours by area and circularity to reject background geometry.
+* **Real-World (Hardware):** The core field pipeline replaces the basic HSV filter with a **YOLO-based deep learning model** (e.g., YOLOv8). This allows the robot to accurately classify and draw bounding boxes around specific real-world crops (like tomatoes or strawberries), distinguishing the fruit from complex foliage and stems under variable outdoor lighting.
 
-```
+For each valid detection (whether a simulated sphere or a YOLO bounding box), the node calculates the centroid pixel and back-projects it to a 3D point in camera space using the camera intrinsic parameters:
+
+```text
 X = (u - cx) * Z / fx
 Y = (v - cy) * Z / fy
-```
-
-The resulting `PointStamped` message is published to `/agrobot/target_watering_point` and consumed by the `PlantWateringNode` to command the arm.
 
 ---
 
-## Roadmap
+## Roadmap & Hardware Evolution
 
 ### V2 — Current (Simulation Complete)
-- [x] Full SolidWorks chassis design
+- [x] Full SolidWorks chassis design (900mm length)
 - [x] URDF/Xacro with Gazebo plugins
 - [x] ROS2 Control + differential drive controller
 - [x] SLAM Toolbox mapping
@@ -168,19 +169,21 @@ The resulting `PointStamped` message is published to `/agrobot/target_watering_p
 - [ ] Full pipeline integration (Nav2 → detect → arm → water)
 - [ ] Beam Command Center dashboard integration
 
-### V3 — Multi-Robot Fleet (In Development)
+### V3 — Advanced Systems & Fleet Monitoring (In Development)
+- [ ] **GPS/GNSS Integration:** For precise global tracking across large outdoor agricultural fields.
+- [ ] **Battery SOC Monitoring:** Real-time State of Charge tracking with autonomous return-to-base charging capabilities.
 - [ ] Multi-robot namespace architecture
 - [ ] Boustrophedon path planning (full row coverage)
-- [ ] Inter-robot task allocation
-- [ ] Fleet monitoring on Beam Command Center
+- [ ] Inter-robot task allocation and fleet monitoring on Beam Command Center
 - [ ] Auto-mapping on first run (exploration behavior)
-- [ ] Base + arm coordination (mobile manipulation)
 
-### V4 — Hardware Deployment
-- [ ] Real hardware build
-- [ ] ROS2 Control hardware interface
-- [ ] Field testing and calibration
-- [ ] Beam Command Center live integration
+### V4 — Hardware Overhaul & Field Deployment
+- [ ] **Drivetrain Upgrade (Tank Treads):** Transitioning from differential castors to continuous tank treads to distribute the 234kg weight, allowing seamless traversal over mud soft soil and zero-degree spin-in-place turns inside tight crop rows.
+- [ ] **Arm Upgrade (6-DOF):** Upgrading the manipulator from 5-DOF to 6-DOF to allow complex nozzle orientations (e.g., spraying upwards underneath leaves).
+- [ ] **Vision Upgrade:** Adding a static, mast-mounted global depth camera to complement the eye-in-hand RealSense camera, preventing foliage from blocking the Field of View.
+- [ ] Real hardware build and assembly
+- [ ] ROS2 Control hardware interface mapping
+- [ ] Field testing, calibration, and Beam Command Center live integration
 
 ---
 
