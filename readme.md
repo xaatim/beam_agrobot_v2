@@ -152,6 +152,7 @@ For each valid detection (whether a simulated sphere or a YOLO bounding box), th
 ```text
 X = (u - cx) * Z / fx
 Y = (v - cy) * Z / fy
+```
 
 ---
 
